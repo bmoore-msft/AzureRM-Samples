@@ -192,37 +192,38 @@
               "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
             }
           ]
-        },
+        }
+
+      },
         "resources": [
-          {
-            "name": "DSCConfig",
-            "type": "extensions",
-            "location": "[resourceGroup().location]",
-            "apiVersion": "2015-06-15",
-            "dependsOn": [
-              "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
-            ],
-            "tags": {
-              "displayName": "DSCConfig"
-            },
-            "properties": {
-              "publisher": "Microsoft.Powershell",
-              "type": "DSC",
-              "typeHandlerVersion": "2.9",
-              "autoUpgradeMinorVersion": true,
-              "settings": {
-                "modulesUrl": "[concat(parameters('_artifactsLocation'), '/DSC/', 'dsc.zip')]",
-                "sasToken": "[parameters('_artifactsLocationSasToken')]",
-                "configurationFunction": "[variables('DSCConfigConfigurationFunction')]",
+            {
+                "name": "DSCConfig",
+                "type": "extensions",
+                "location": "[resourceGroup().location]",
+                "apiVersion": "2015-06-15",
+                "dependsOn": [
+                    "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
+                ],
+                "tags": {
+                    "displayName": "DSCConfig"
+                },
                 "properties": {
-                  "nodeName": "[variables('vmName')]"
+                    "publisher": "Microsoft.Powershell",
+                    "type": "DSC",
+                    "typeHandlerVersion": "2.9",
+                    "autoUpgradeMinorVersion": true,
+                    "settings": {
+                        "modulesUrl": "[concat(parameters('_artifactsLocation'), '/DSC/', 'dsc.zip')]",
+                        "sasToken": "[parameters('_artifactsLocationSasToken')]",
+                        "configurationFunction": "[variables('DSCConfigConfigurationFunction')]",
+                        "properties": {
+                            "nodeName": "[variables('vmName')]"
+                        }
+                    },
+                    "protectedSettings": { }
                 }
-              },
-              "protectedSettings": { }
             }
-          }
         ]
-      }
     }
   ]
 }
