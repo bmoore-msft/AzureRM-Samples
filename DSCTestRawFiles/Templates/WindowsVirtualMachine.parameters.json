@@ -6,7 +6,7 @@
             "value": "bmoore"
         },
         "dnsNameForPublicIP": {
-            "value": "tr22-dsctest"
+            "value": "tr22-dsctest2"
         },
         "windowsOSVersion": {
             "value": "Windows-Server-Technical-Preview"
