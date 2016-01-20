@@ -10,6 +10,14 @@
         },
         "windowsOSVersion": {
             "value": "Windows-Server-Technical-Preview"
+        },
+        "adminPassword": {
+          "reference": {
+            "keyVault": {
+              "id": "/subscriptions/ec0f79d3-16f0-4892-8165-f569a92c8273/resourceGroups/vaultsgroup/providers/Microsoft.KeyVault/vaults/bmoore-demo"
+            },
+            "secretName": "adminPassword"
+          }
         }
     }
 }
