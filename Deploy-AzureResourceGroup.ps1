@@ -78,12 +78,10 @@ if ($UploadArtifacts) {
 
     if($StorageAccount -eq $null){
         New-AzureRmResourceGroup -Location "$ResourceGroupLocation" -Name $StorageResourceGroupName -Force
-        New-AzureRmStorageAccount -StorageAccountName $StorageAccountName -Type 'Standard_LRS' -ResourceGroupName $StorageResourceGroupName -Location "$ResourceGroupLocation"
-        $StorageAccountContext = (Get-AzureRmStorageAccount | Where-Object{$_.StorageAccountName -eq $StorageAccountName}).Context
+        $StorageAccount = New-AzureRmStorageAccount -StorageAccountName $StorageAccountName -Type 'Standard_LRS' -ResourceGroupName $StorageResourceGroupName -Location "$ResourceGroupLocation"
     }
-    else {
-        $StorageAccountContext = $storageAccount.Context
-    }
+
+    $StorageAccountContext = $storageAccount.Context
     
     # Generate the value for artifacts location if it is not provided in the parameter file
     $ArtifactsLocation = $OptionalParameters[$ArtifactsLocationName]
