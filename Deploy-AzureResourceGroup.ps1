@@ -14,10 +14,6 @@ Param(
     [string] $DSCSourceFolder = '.\' + $ResourceGroupName + '\DSC'
 )
 
-function Get-StorageContext([string]$accountName) {
-    Write-Host "hello"
-}
-
 Import-Module Azure -ErrorAction SilentlyContinue
 
 try {
