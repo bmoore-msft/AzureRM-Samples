@@ -1,6 +1,7 @@
 # Azure Resource Manager Samples
 
-This repo has a handful of scenario based samples for using Azure Resource Manager Templates.  Also included are scripts that will deploy the template *and* any related artifacts (configuration scripts, nested templates) required for the template deployment.
+This repo has a handful of scenario based samples for using Azure Resource Manager Templates.  Also included are scripts that will deploy the template *and* any related artifacts
+ (configuration scripts, nested templates) required for the template deployment.
 
 These scripts are similar to the script used by the Azure SDK in Visual Studio and follow the same model for parameterizing templates for staged artifacts.
 The artifacts are copied to an Azure storage account and parameters are used for the uri's and sasToken. Special parameter names are used by each template
@@ -21,7 +22,9 @@ Run the script and point the script to the folder for the sample you want to dep
 ```bash
 azure-group-deploy.sh -a [foldername] -l eastus -u
 ```
-If your sample has artifacts that need to be "staged" for deployment (Configuration Scripts, Nested Templates, DSC Packages) then add a storage account parameter to the command.  Note the storage account must already exist within the subscription.  Think of this a "temp" storage for AzureRM.
+If your sample has artifacts that need to be "staged" for deployment (Configuration Scripts, Nested Templates, DSC Packages) then set the upload switch on the command.
+You can optionally specify a storage account to use, if so the storage account must already exist within the subscription.  If you don't want to specify a storage account
+one will be created by the script (think of this as "temp" storage for AzureRM) and reused by subsequent deployments.
 
 ```PowerShell
 .\Deploy-AzureResourceGroup.ps1 -ResourceGroupLocation 'eastus' -ArtifactsStagingDirectory 'NestedSample' -UploadArtifacts 
