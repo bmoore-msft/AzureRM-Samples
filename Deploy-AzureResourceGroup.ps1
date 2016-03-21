@@ -13,6 +13,7 @@ Param(
     [string] $TemplateFile = $ArtifactStagingDirectory + '\azuredeploy.json',
     [string] $TemplateParametersFile = $ArtifactStagingDirectory + '.\azuredeploy.parameters.json',
     [string] $DSCSourceFolder = '.\' + $ResourceGroupName + '\DSC'
+#    [string] $DebugOptions = "None"
 )
 
 Import-Module Azure -ErrorAction SilentlyContinue
@@ -24,6 +25,15 @@ try {
 Set-StrictMode -Version 3
 
 $OptionalParameters = New-Object -TypeName Hashtable
+<#
+$v = (Get-Module -Name AzureRM.Resources).Version
+If ($v.Major -eq 1 -and $v.Minor -eq 2){
+    Write-Warning "DeploymentDebugLogLevel is not available in this version of Azure PowerShell"
+}
+else{
+    $OptionalParameters.Add('DeploymentDebugLogLevel', $DebugOptions)
+}
+#>
 $TemplateFile = [System.IO.Path]::Combine($PSScriptRoot, $TemplateFile)
 $TemplateParametersFile = [System.IO.Path]::Combine($PSScriptRoot, $TemplateParametersFile)
 
