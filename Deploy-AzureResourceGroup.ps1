@@ -12,7 +12,7 @@ Param(
     [string] $StorageContainerName = $ResourceGroupName.ToLowerInvariant() + '-stageartifacts',
     [string] $TemplateFile = $ArtifactStagingDirectory + '\azuredeploy.json',
     [string] $TemplateParametersFile = $ArtifactStagingDirectory + '.\azuredeploy.parameters.json',
-    [string] $DSCSourceFolder = '.\' + $ResourceGroupName + '\DSC'
+    [string] $DSCSourceFolder = $ArtifactStagingDirectory + '.\DSC'
 #    [string] $DebugOptions = "None"
 )
 
