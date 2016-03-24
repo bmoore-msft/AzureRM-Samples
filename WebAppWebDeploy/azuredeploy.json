@@ -58,7 +58,7 @@
         "displayName": "Website"
       },
       "dependsOn": [
-        "[concat('Microsoft.Web/serverfarms/', variables('hostingPlanName'))]"
+        "[variables('hostingPlanName')]"
       ],
       "properties": {
         "name": "[variables('webSiteName')]",
@@ -71,7 +71,7 @@
                 "location": "[resourceGroup().location]",
                 "apiVersion": "2015-08-01",
                 "dependsOn": [
-                    "[concat('Microsoft.Web/sites/', variables('webSiteName'))]"
+                    "[variables('webSiteName')]"
                 ],
                 "tags": {
                     "displayName": "msdeploy"
