@@ -6,7 +6,7 @@
 Param(
     [string] [Parameter(Mandatory=$true)] $ArtifactStagingDirectory,
     [string] [Parameter(Mandatory=$true)] $ResourceGroupLocation,
-    [string] $ResourceGroupName = $ArtifactStagingDirectory,
+    [string] $ResourceGroupName = $ArtifactStagingDirectory.replace('.\',''), #remove .\ if present
     [switch] $UploadArtifacts,
     [string] $StorageAccountName,
     [string] $StorageContainerName = $ResourceGroupName.ToLowerInvariant() + '-stageartifacts',
