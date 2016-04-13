@@ -1,4 +1,4 @@
-#Requires -Version 3.0
+﻿#Requires -Version 3.0
 #Requires -Module AzureRM.Resources
 #Requires -Module Azure.Storage
 #Requires -Module AzureRM.Storage
@@ -44,37 +44,19 @@ if ($UploadArtifacts) {
 
     Set-Variable ArtifactsLocationName '_artifactsLocation' -Option ReadOnly -Force
     Set-Variable ArtifactsLocationSasTokenName '_artifactsLocationSasToken' -Option ReadOnly -Force
+	Set-Variable ArtifactsLocationResourceIdName '_artifactsLocationResourceId' -Option ReadOnly -Force
 
-    $OptionalParameters.Add($ArtifactsLocationName, $null)
-    $OptionalParameters.Add($ArtifactsLocationSasTokenName, $null)
-
-    # Parse the parameter file and update the values of artifacts location and artifacts location SAS token if they are present
-    $JsonContent = Get-Content $TemplateParametersFile -Raw | ConvertFrom-Json
-    $JsonParameters = $JsonContent | Get-Member -Type NoteProperty | Where-Object {$_.Name -eq "parameters"}
-
-    if ($JsonParameters -eq $null) {
-        $JsonParameters = $JsonContent
+    $TemplateFileContent = Get-Content $TemplateFile -Raw | ConvertFrom-Json
+    $TemplateParametersFileContent = Get-Content $TemplateParametersFile -Raw | ConvertFrom-Json
+    #$TemplateParametersFileContent = $TemplateFileContent | Get-Member -Type NoteProperty | Where-Object {$_.Name -eq "parameters"}
+    if (Get-Member -InputObject $TemplateParametersFileContent -Name parameters) {
+        $TemplateParameters= $TemplateParametersFileContent.parameters
     }
     else {
-        $JsonParameters = $JsonContent.parameters
+        $TemplateParameters = $TemplateParametersFileContent
     }
 
-    $JsonParameters | Get-Member -Type NoteProperty | ForEach-Object {
-        $ParameterValue = $JsonParameters | Select-Object -ExpandProperty $_.Name
-
-        if ($_.Name -eq $ArtifactsLocationName -or $_.Name -eq $ArtifactsLocationSasTokenName) {
-            $OptionalParameters[$_.Name] = $ParameterValue.value
-        }
-    }
-
-    # Create DSC configuration archive
-    if (Test-Path $DSCSourceFolder) {
-        Add-Type -Assembly System.IO.Compression.FileSystem
-        $ArchiveFile = Join-Path $ArtifactStagingDirectory "dsc.zip"
-        Remove-Item -Path $ArchiveFile -ErrorAction SilentlyContinue
-        [System.IO.Compression.ZipFile]::CreateFromDirectory($DSCSourceFolder, $ArchiveFile)
-    }
-
+    #if not storage account name was provided, use the temporary storage account
     if($StorageAccountName -eq "") {
         $StorageResourceGroupName = "ARMTempStorage"
         $subscriptionId = ((Get-AzureRmContext).Subscription.SubscriptionId).substring(0,24).Replace('-','')
@@ -83,6 +65,7 @@ if ($UploadArtifacts) {
 
     $StorageAccount = (Get-AzureRmStorageAccount | Where-Object{$_.StorageAccountName -eq $StorageAccountName})
 
+    #if the temporary storage account does not exist, create it
     if($StorageAccount -eq $null){
         New-AzureRmResourceGroup -Location "$ResourceGroupLocation" -Name $StorageResourceGroupName -Force
         $StorageAccount = New-AzureRmStorageAccount -StorageAccountName $StorageAccountName -Type 'Standard_LRS' -ResourceGroupName $StorageResourceGroupName -Location "$ResourceGroupLocation"
@@ -90,11 +73,31 @@ if ($UploadArtifacts) {
 
     $StorageAccountContext = $storageAccount.Context
     
-    # Generate the value for artifacts location if it is not provided in the parameter file
-    $ArtifactsLocation = $OptionalParameters[$ArtifactsLocationName]
-    if ($ArtifactsLocation -eq $null) {
-        $ArtifactsLocation = $StorageAccountContext.BlobEndPoint + $StorageContainerName
-        $OptionalParameters[$ArtifactsLocationName] = $ArtifactsLocation
+    if (Get-Member -InputObject $TemplateFileContent.parameters -Name _artifactsLocation) {
+        if (Get-Member -InputObject $TemplateParameters -Name _artifactsLocation) {
+            $OptionalParameters.Add($ArtifactsLocationName, $TemplateParameters._artifactsLocation)
+        }                
+        else {
+            $OptionalParameters.Add($ArtifactsLocationName, $StorageAccountContext.BlobEndPoint + $StorageContainerName)
+        }
+    }
+
+    if (Get-Member -InputObject $TemplateFileContent.parameters -Name _artifactsLocationResourceId) {
+        if (Get-Member -InputObject $TemplateParameters -Name _artifactsLocationResourceId) {
+            $OptionalParameters.Add($artifactsLocationResourceIdName, $TemplateParameters._artifactsLocationResourceId)
+        }
+        else {
+            $OptionalParameters.Add($artifactsLocationResourceIdName, $storageAccount.Id)
+        }
+    }
+    
+    # Create DSC configuration archive
+    if (Test-Path $DSCSourceFolder) {
+        $DSCFiles = Get-ChildItem $DSCSourceFolder -File -Filter "*.ps1" | ForEach-Object -Process {$_.FullName}
+        foreach ($DSCFile in $DSCFiles) {
+            $DSCZipFile = $DSCFile.Replace(".ps1",".zip")
+            Publish-AzureVMDscConfiguration -ConfigurationPath $DSCFile -ConfigurationArchivePath $DSCZipFile -Force
+        }
     }
 
     # Copy files from the local storage staging location to the storage account container
@@ -107,12 +110,15 @@ if ($UploadArtifacts) {
     }
 
     # Generate the value for artifacts location SAS token if it is not provided in the parameter file
-    $ArtifactsLocationSasToken = $OptionalParameters[$ArtifactsLocationSasTokenName]
-    if ($ArtifactsLocationSasToken -eq $null) {
-        # Create a SAS token for the storage container - this gives temporary read-only access to the container
-        $ArtifactsLocationSasToken = New-AzureStorageContainerSASToken -Container $StorageContainerName -Context $StorageAccountContext -Permission r -ExpiryTime (Get-Date).AddHours(4)
-        $ArtifactsLocationSasToken = ConvertTo-SecureString $ArtifactsLocationSasToken -AsPlainText -Force
-        $OptionalParameters[$ArtifactsLocationSasTokenName] = $ArtifactsLocationSasToken
+    if (Get-Member -InputObject $TemplateFileContent.parameters -Name _artifactsLocationSasToken) {
+        if (Get-Member -InputObject $TemplateParameters -Name _artifactsLocationSasToken) {
+            $OptionalParameters.Add($ArtifactsLocationSasTokenName, $TemplateParameters._artifactsLocationSasToken)
+        }
+        else {
+            $ArtifactsLocationSasToken = New-AzureStorageContainerSASToken -Container $StorageContainerName -Context $StorageAccountContext -Permission r -ExpiryTime (Get-Date).AddHours(4)
+            $ArtifactsLocationSasToken = ConvertTo-SecureString $ArtifactsLocationSasToken -AsPlainText -Force
+            $OptionalParameters.Add($ArtifactsLocationSasTokenName, $ArtifactsLocationSasToken)
+        }  
     }
 }
 

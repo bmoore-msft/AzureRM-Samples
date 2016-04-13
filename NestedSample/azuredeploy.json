@@ -51,5 +51,9 @@
         }
     ],
     "outputs": {
+    "storageAccountName": {
+      "value": "[reference(concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Resources/deployments/nestedStorage'),'2015-01-01').outputs.storageAccountName.value]",
+      "type": "string"
     }
+  }
 }
