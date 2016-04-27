@@ -196,6 +196,7 @@
             "type": "CustomScriptExtension",
             "typeHandlerVersion": "1.8",
             "autoUpgradeMinorVersion": true,
+            "forceUpdateTag" : "changeThisToEnsureScriptRuns-maxlength=50",
             "settings": {
               "fileUris": [
                 "[concat(parameters('_artifactsLocation'), '/', variables('cseScriptFolder'), '/', variables('cseScriptFileName'), parameters('_artifactsLocationSasToken'))]"

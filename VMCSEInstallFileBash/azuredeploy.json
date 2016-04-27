@@ -196,7 +196,7 @@
                     "type": "CustomScriptForLinux",
                     "typeHandlerVersion": "1.5",
                     "autoUpgradeMinorVersion": true,
-                    "forceUpdateTag" : "changeToEnsureScriptRunsOnExistingDeployment1",
+                    "forceUpdateTag" : "changeThisToEnsureScriptRuns-maxlength=50",
                     "settings": {
                         "fileUris": [
                             "[concat(parameters('_artifactsLocation'), '/', variables('scriptFolder'), '/', variables('scriptFileName'), parameters('_artifactsLocationSasToken'))]"

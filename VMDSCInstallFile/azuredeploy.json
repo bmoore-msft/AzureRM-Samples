@@ -219,6 +219,7 @@
               "type": "DSC",
               "typeHandlerVersion": "2.15",
               "autoUpgradeMinorVersion": true,
+              "forceUpdateTag" : "changeThisToEnsureScriptRuns-maxlength=50",
               "settings": {
                 "wmfVersion": "latest",
                 "configuration": {
