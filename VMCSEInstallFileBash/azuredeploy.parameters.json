@@ -4,7 +4,6 @@
     "parameters": {
         "adminUsername": {
             "value": "ghuser"
-        },
-        "adminPassword":{ "value": "TryingToDebug1!"}
+        }
     }
 }
