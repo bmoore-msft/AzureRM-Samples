@@ -15,7 +15,7 @@
         }
     },
     "variables": {
-        "storageName": "[concat('nest', uniqueString(resourceGroup().id))]"
+        "storageName": "[concat('storage', uniqueString(resourceGroup().id))]"
     },
     "resources": [
         {
