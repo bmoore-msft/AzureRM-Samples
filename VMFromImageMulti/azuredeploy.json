@@ -1,0 +1,214 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "userImageStorageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Storage account name for the user image"
+      }
+    },
+    "userImageStorageContainerName": {
+      "type": "string",
+      "metadata": {
+        "description": "Storage container name for User image "
+      }
+    },
+    "userImageVhdName": {
+      "type": "string",
+      "metadata": {
+        "description": "Storage container name for User image "
+      }
+    },
+    "vmImageStorageContainerName": {
+      "type": "string",
+      "defaultValue": "vhd-instances"
+    },
+    "osType": {
+      "type": "string",
+      "allowedValues": [
+        "Windows",
+        "Linux"
+      ],
+      "metadata": {
+        "description": "Type of OS on the user image"
+      }
+    },
+    "dnsPrefix": {
+      "type": "string",
+      "defaultValue": "[concat('azurermsamples-', uniqueString(resourceGroup().id))]",
+      "metadata": {
+        "description": "dns prefix for the VM"
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Admin user name"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Admin password"
+      }
+    },
+    "numberOfInstances": {
+      "type": "int",
+      "defaultValue": 1,
+      "metadata": {
+        "description": "Number of VMs to create"
+      }
+    },
+    "copyOffset": {
+      "type": "int",
+      "defaultvalue": 1
+    },
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D2",
+      "metadata": {
+        "description": "Size of the VM"
+      }
+    }
+  },
+  "variables": {
+    "virtualNetworkName": "VNet",
+    "VMLocation":  "[resourceGroup().location]",
+    "addressPrefix": "10.0.0.0/16",
+    "subnet1Name": "Subnet-1",
+    "subnet1Prefix": "10.0.0.0/24",
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
+    "subnet1Ref": "[concat(variables('vnetID'),'/subnets/',variables('subnet1Name'))]",
+    "userImageName":      "[concat('http://',parameters('userImageStorageAccountName'),'.blob.core.windows.net/',parameters('userImageStorageContainerName'),'/',parameters('userImageVhdName'))]",
+    "osDiskVhdContainer": "[concat('http://',parameters('userImageStorageAccountName'),'.blob.core.windows.net/',parameters('vmImageStorageContainerName'),'/')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('virtualNetworkName')]",
+      "location": "[variables('VMLocation')]",
+      "tags": {
+        "displayName": "virtualNetwork"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('addressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnet1Name')]",
+            "properties": {
+              "addressPrefix": "[variables('subnet1Prefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat('publicIp-', copyIndex(parameters('copyOffset')))]",
+      "location": "[variables('VMLocation')]",
+      "copy": {
+        "name": "publicIPLoop",
+        "count": "[parameters('numberOfInstances')]"
+      },
+      "tags": {
+        "displayName": "publicIPLoop"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[concat(parameters('dnsPrefix'),'-',copyIndex(parameters('copyOffset')))]"
+        }
+      }
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat('nic-', copyIndex(parameters('copyOffset')))]",
+      "location": "[variables('VMLocation')]",
+      "copy": {
+        "name": "nicLoop",
+        "count": "[parameters('numberOfInstances')]"
+      },
+      "tags": {
+        "displayName": "nicLoop"
+      },
+      "dependsOn": [
+        "publicIPLoop"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat('publicIp-', copyIndex(parameters('copyOffset'))))]"
+              },
+              "subnet": {
+                "id": "[variables('subnet1Ref')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(parameters('dnsPrefix'),'-',copyIndex(parameters('copyOffset')))]",
+      "location": "[variables('VMLocation')]",
+      "copy": {
+        "name": "virtualMachineLoop",
+        "count": "[parameters('numberOfInstances')]"
+      },
+      "tags": {
+        "displayName": "virtualMachineLoop"
+      },
+      "dependsOn": [ "nicLoop" ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[concat(parameters('dnsPrefix'),'-',copyIndex(parameters('copyOffset')))]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "osDisk": {
+            "name": "[concat(parameters('dnsPrefix'),'-osDisk',copyIndex(parameters('copyOffset')))]",
+            "osType": "[parameters('osType')]",
+            "caching": "ReadWrite",
+            "image": {
+              "uri": "[variables('userImageName')]"
+            },
+            "vhd": {
+              "uri": "[concat(variables('osDiskVhdContainer'),parameters('dnsPrefix'),'-osDisk-',copyIndex(parameters('copyOffset')),'.vhd')]"
+            },
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat('nic-', copyIndex(parameters('copyOffset'))))]"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "first-vm-fqdn": {
+      "type": "string",
+      "value": "[reference(concat('publicIp-', parameters('copyOffset'))).dnsSettings.fqdn]"
+    }
+  }
+}

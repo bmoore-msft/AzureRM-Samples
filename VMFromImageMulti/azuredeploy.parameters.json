@@ -1,0 +1,29 @@
+﻿{
+  "adminUsername": {
+    "value": "ghuser"
+  },
+  "userImageStorageAccountName": {
+    "value": "account that holds the custom image"
+  },
+  "userImageStorageContainerName": {
+    "value": "container that holds the image"
+  },
+  "userImageVhdName": {
+    "value": "file name of the image"
+  },
+  "osType": {
+    "value": "Windows"
+  },
+  "vmSize": {
+    "value": "Standard_D2"
+  },
+  "numberOfInstances": {
+    "value": 3
+  },
+  "copyOffset": {
+    "value": 1
+  },
+  "vmImageStorageContainerName": {
+    "value": "vhd-instances" 
+  }
+}
