@@ -15,18 +15,6 @@
         "description": "Password for the Virtual Machine."
       }
     },
-    "windowsOSVersion": {
-      "type": "string",
-      "defaultValue": "2012-R2-Datacenter",
-      "allowedValues": [
-        "2008-R2-SP1",
-        "2012-Datacenter",
-        "2012-R2-Datacenter"
-      ],
-      "metadata": {
-        "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version. Allowed values: 2008-R2-SP1, 2012-Datacenter, 2012-R2-Datacenter."
-      }
-    },
       "_artifactsLocation": {
           "type": "string",
           "metadata": {
@@ -55,38 +43,29 @@
     }
   },
   "variables": {
-    "imagePublisher": "MicrosoftWindowsServer",
-    "imageOffer": "WindowsServer",
-    "OSDiskName": "osdiskforwindowssimple",
-    "nicName": "myVMNic",
-    "addressPrefix": "10.0.0.0/16",
-    "subnetName": "Subnet",
-    "subnetPrefix": "10.0.0.0/24",
-    "vhdStorageType": "Standard_LRS",
     "publicIPAddressName": "myPublicIP",
-    "publicIPAddressType": "Dynamic",
-    "dnsNameForPublicIP": "[concat('vm-',uniqueSTring(resourceGroup().id))]",
-    "vhdStorageContainerName": "vhds",
     "vmName": "MyWindowsVM",
-    "vmSize": "Standard_A2",
     "virtualNetworkName": "MyVNET",
-    "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
-    "subnetRef": "[concat(variables('vnetId'), '/subnets/', variables('subnetName'))]",
+    "nicName": "myVMNic",
+    "subnetName": "Subnet",
+    "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
     "vhdStorageName": "[concat('vhdstorage', uniqueString(resourceGroup().id))]",
-    "dscConfigurationScript" : "dscConfiguration.ps1",
-    "dscConfigurationFunction": "Main"
+    "dscConfigurationScript" : "dscConfiguration.ps1"
   },
   "resources": [
     {
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[variables('vhdStorageName')]",
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2016-01-01",
       "location": "[resourceGroup().location]",
-      "tags": {
-        "displayName": "StorageAccount"
+      "tags":{
+        "displayName": "vhdStorage"
       },
+      "sku": {
+          "name": "Standard_LRS"
+      },
+      "kind": "Storage", 
       "properties": {
-        "accountType": "[variables('vhdStorageType')]"
       }
     },
     {
@@ -98,9 +77,9 @@
         "displayName": "PublicIPAddress"
       },
       "properties": {
-        "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
+        "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
-          "domainNameLabel": "[variables('dnsNameForPublicIP')]"
+          "domainNameLabel": "[concat('vm-',uniqueString(resourceGroup().id))]"
         }
       }
     },
@@ -115,14 +94,14 @@
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
-            "[variables('addressPrefix')]"
+            "10.0.0.0/16"
           ]
         },
         "subnets": [
           {
             "name": "[variables('subnetName')]",
             "properties": {
-              "addressPrefix": "[variables('subnetPrefix')]"
+              "addressPrefix": "10.0.0.0/24"
             }
           }
         ]
@@ -171,7 +150,7 @@
       ],
       "properties": {
         "hardwareProfile": {
-          "vmSize": "[variables('vmSize')]"
+          "vmSize": "Standard_DS1_v2"
         },
         "osProfile": {
           "computerName": "[variables('vmName')]",
@@ -180,15 +159,15 @@
         },
         "storageProfile": {
           "imageReference": {
-            "publisher": "[variables('imagePublisher')]",
-            "offer": "[variables('imageOffer')]",
-            "sku": "[parameters('windowsOSVersion')]",
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2012-R2-Datacenter",
             "version": "latest"
           },
           "osDisk": {
             "name": "osdisk",
             "vhd": {
-              "uri": "[concat('http://', variables('vhdStorageName'), '.blob.core.windows.net/', variables('vhdStorageContainerName'), '/', variables('OSDiskName'), '.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('vhdStorageName'))).primaryEndpoints.blob, 'vhds/osdisk.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
@@ -217,18 +196,17 @@
             "properties": {
               "publisher": "Microsoft.Powershell",
               "type": "DSC",
-              "typeHandlerVersion": "2.15",
+              "typeHandlerVersion": "2.20",
               "autoUpgradeMinorVersion": true,
-              "forceUpdateTag" : "changeThisToEnsureScriptRuns-maxlength=50",
               "settings": {
                 "wmfVersion": "latest",
                 "configuration": {
-                  "url": "[concat(parameters('_artifactsLocation'), '/', 'dsc.zip')]",
+                  "url": "[concat(parameters('_artifactsLocation'), '/DSC/', replace(variables('dscConfigurationScript'), '.ps1', '.zip'))]",
                   "script": "[variables('dscConfigurationScript')]",
-                  "function": "[variables('dscConfigurationFunction')]"
+                  "function": "Main"
                 },
                 "configurationArguments": {
-                  "nodeName": "[variables('vmName')]",
+                  "nodeName": "localhost",
                   "artifactsLocation": "[parameters('_artifactsLocation')]",
                   "webDeployPackageFileName": "[parameters('webDeployPackageFileName')]",
                   "webDeployPackageFolder": "[parameters('webDeployPackageFolder')]"
