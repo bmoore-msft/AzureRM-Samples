@@ -12,7 +12,8 @@ Param(
     [string] $StorageContainerName = $ResourceGroupName.ToLowerInvariant() + '-stageartifacts',
     [string] $TemplateFile = $ArtifactStagingDirectory + '\azuredeploy.json',
     [string] $TemplateParametersFile = $ArtifactStagingDirectory + '.\azuredeploy.parameters.json',
-    [string] $DSCSourceFolder = $ArtifactStagingDirectory + '.\DSC'
+    [string] $DSCSourceFolder = $ArtifactStagingDirectory + '.\DSC',
+    [switch] $ValidateOnly
 #    [string] $DebugOptions = "None"
 )
 
@@ -125,9 +126,18 @@ if ($UploadArtifacts) {
 # Create or update the resource group using the specified template file and template parameters file
 New-AzureRmResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation -Verbose -Force -ErrorAction Stop 
 
-New-AzureRmResourceGroupDeployment -Name ((Get-ChildItem $TemplateFile).BaseName + '-' + ((Get-Date).ToUniversalTime()).ToString('MMdd-HHmm')) `
-                                   -ResourceGroupName $ResourceGroupName `
-                                   -TemplateFile $TemplateFile `
-                                   -TemplateParameterFile $TemplateParametersFile `
-                                   @OptionalParameters `
-                                   -Force -Verbose
+if ($ValidateOnly) {
+    Test-AzureRmResourceGroupDeployment -ResourceGroupName $ResourceGroupName `
+                                        -TemplateFile $TemplateFile `
+                                        -TemplateParameterFile $TemplateParametersFile `
+                                        @OptionalParameters `
+                                        -Verbose
+}
+else {
+    New-AzureRmResourceGroupDeployment -Name ((Get-ChildItem $TemplateFile).BaseName + '-' + ((Get-Date).ToUniversalTime()).ToString('MMdd-HHmm')) `
+                                       -ResourceGroupName $ResourceGroupName `
+                                       -TemplateFile $TemplateFile `
+                                       -TemplateParameterFile $TemplateParametersFile `
+                                       @OptionalParameters `
+                                       -Force -Verbose 
+}
