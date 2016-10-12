@@ -57,17 +57,17 @@ if ($UploadArtifacts) {
         $TemplateParameters = $TemplateParametersFileContent
     }
 
-    #if not storage account name was provided, use the temporary storage account
+    # Create a storage account name if none was provided
     if($StorageAccountName -eq "") {
-        $StorageResourceGroupName = "ARMTempStorage"
-        $subscriptionId = ((Get-AzureRmContext).Subscription.SubscriptionId).substring(0,24).Replace('-','')
-        $StorageAccountName = "temp$subscriptionId"
+        $subscriptionId = ((Get-AzureRmContext).Subscription.SubscriptionId).Replace('-', '').substring(0, 19)
+        $StorageAccountName = "stage$subscriptionId"
     }
 
     $StorageAccount = (Get-AzureRmStorageAccount | Where-Object{$_.StorageAccountName -eq $StorageAccountName})
 
-    #if the temporary storage account does not exist, create it
+    # Create the storage account if it doesn't already exist
     if($StorageAccount -eq $null){
+        $StorageResourceGroupName = "ARM_Deploy_Staging"
         New-AzureRmResourceGroup -Location "$ResourceGroupLocation" -Name $StorageResourceGroupName -Force
         $StorageAccount = New-AzureRmStorageAccount -StorageAccountName $StorageAccountName -Type 'Standard_LRS' -ResourceGroupName $StorageResourceGroupName -Location "$ResourceGroupLocation"
     }
