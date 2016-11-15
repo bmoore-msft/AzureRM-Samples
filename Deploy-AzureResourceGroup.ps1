@@ -97,7 +97,7 @@ if ($UploadArtifacts) {
         $DSCFiles = Get-ChildItem $DSCSourceFolder -File -Filter "*.ps1" | ForEach-Object -Process {$_.FullName}
         foreach ($DSCFile in $DSCFiles) {
             $DSCZipFile = $DSCFile.Replace(".ps1",".zip")
-            Publish-AzureVMDscConfiguration -ConfigurationPath $DSCFile -ConfigurationArchivePath $DSCZipFile -Force
+            Publish-AzureRmVMDscConfiguration -ConfigurationPath $DSCFile -OutputArchivePath $DSCZipFile -Force
         }
     }
 
