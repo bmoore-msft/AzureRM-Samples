@@ -119,7 +119,7 @@ Node $nodeName
             #find msdeploy.exe in the location where this script installed it
             $deploycmd = "$env:ProgramFiles\IIS\Microsoft Web Deploy V3\msdeploy.exe"
             $packageLocation = Resolve-Path -Path "C:\WindowsAzure\$using:webDeployPackageFolder\$using:webDeployPackageFileName"
-            & $deploycmd "-verb:sync", "-source:package=$packageLocation", "-dest:auto"
+            & $deploycmd "-verb:sync", "-source:package=$packageLocation", "-dest:auto",  "-setParam:name=""IIS Web Application Name"",value=""Default Web Site"""
          }
          GetScript = { @{Result = "DeployPackage"} }
          DependsOn = "[Script]InstallFileFromStaging"
