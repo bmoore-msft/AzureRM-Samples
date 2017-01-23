@@ -2,8 +2,8 @@ Configuration Main
 {
 
 Param ($nodeName,
-	$artifactsLocation,
-	$artifactsLocationSasToken,
+    $artifactsLocation,
+    $artifactsLocationSasToken,
     $webDeployPackageFileName, # should be of the format projectname/file.ext
     $webDeployPackageFolder
  )
@@ -89,24 +89,24 @@ Node $nodeName
         DependsOn = "[Package]InstallWebDeploy"
     }
     File CreateFolder
-	  {
-		DestinationPath = "c:\WindowsAzure\$webDeployPackageFolder"
-		Ensure = "Present"
-		Type = "Directory"
-	  }
-	Script InstallFileFromStaging
-     {	
-		TestScript = {
+      {
+        DestinationPath = "c:\WindowsAzure\$webDeployPackageFolder"
+        Ensure = "Present"
+        Type = "Directory"
+      }
+    Script InstallFileFromStaging
+     {    
+        TestScript = {
             #This is not ideal since this means we won't overwrite an existing package (never updated)
             Test-Path "C:\WindowsAzure\$using:webDeployPackageFolder\$using:webDeployPackageFileName"
         }
         SetScript = {
             $source = $using:artifactsLocation + "\$using:webDeployPackageFolder\$using:webDeployPackageFileName" + $using:artifactsLocationSasToken
-			$dest = "C:\WindowsAzure\$using:webDeployPackageFolder\$using:webDeployPackageFileName"
+            $dest = "C:\WindowsAzure\$using:webDeployPackageFolder\$using:webDeployPackageFileName"
             Invoke-WebRequest $source -OutFile $dest
         }
         GetScript = { @{Result = "InstallFileFromStaging"} }
-		DependsOn = "[File]CreateFolder"
+        DependsOn = "[File]CreateFolder"
      }
      Script DeployPackage
      {
