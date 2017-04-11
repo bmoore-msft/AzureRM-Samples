@@ -49,8 +49,6 @@ fi
 
 parameterJson=$( cat "$parametersFile" | jq '.parameters' )
 
-azure config mode arm
-
 if [[ ! -z $uploadArtifacts ]]
 then
 
@@ -63,13 +61,13 @@ then
         artifactsStorageAccountName="stage$subscriptionId"
         artifactsResourceGroupName="ARM_Deploy_Staging"    
 
-        if [[ -z $( azure storage account list --json | jq -r '.[].name | select(. == '\"$artifactsStorageAccountName\"')' ) ]]
+        if [[ -z $( az storage account list -o json | jq -r '.[].name | select(. == '\"$artifactsStorageAccountName\"')' ) ]]
         then
-            azure group create "$artifactsResourceGroupName" "$location"
-            azure storage account create -l "$location" --type "LRS" -g "$artifactsResourceGroupName" "$artifactsStorageAccountName" 2>/dev/null
+            az group create -n "$artifactsResourceGroupName" -l "$location"
+            az storage account create -l "$location" --sku "Standard_LRS" -g "$artifactsResourceGroupName" -n "$artifactsStorageAccountName" 2>/dev/null
         fi
     else
-        artifactsResourceGroupName=$( azure storage account list --json | jq -r '.[] | select(.name == '\"$s\"') .resourceGroup' )
+        artifactsResourceGroupName=$( az storage account list -o json | jq -r '.[] | select(.name == '\"$s\"') .resourceGroup' )
         if [[ -z $artifactsResourceGroupName ]] 
         then
             echo "Cannot find storageAccount: "$storageAccountName
@@ -79,15 +77,15 @@ then
     artifactsStorageContainerName=${resourceGroupName}"-stageartifacts"
     artifactsStorageContainerName=$( echo "$artifactsStorageContainerName" | awk '{print tolower($0)}')
     
-    artifactsStorageAccountKey=$( azure storage account keys list -g "$artifactsResourceGroupName" "$artifactsStorageAccountName" --json | jq -r '.[0].value' )
-    azure storage container create --container "$artifactsStorageContainerName" -p Off -a "$artifactsStorageAccountName" -k "$artifactsStorageAccountKey" >/dev/null 2>&1
+    artifactsStorageAccountKey=$( az storage account keys list -g "$artifactsResourceGroupName" -n "$artifactsStorageAccountName" -o json | jq -r '.[0].value' )
+    az storage container create -n "$artifactsStorageContainerName" --account-name "$artifactsStorageAccountName" --account-key "$artifactsStorageAccountKey" >/dev/null 2>&1
     
     # Get a 4-hour SAS Token for the artifacts container. Fall back to OSX date syntax if Linux syntax fails.
-    plusFourHoursUtc=$(date -u -v+4H +%Y-%m-%dT%H:%M:%S%z 2>/dev/null) || plusFourHoursUtc=$(date -u --date "$dte 4 hour" --iso-8601=seconds)
+    plusFourHoursUtc=$(date -u -v+4H +%Y-%m-%dT%H:%MZ 2>/dev/null)  || plusFourHoursUtc=$(date -u --date "$dte 4 hour" +%Y-%m-%dT%H:%MZ)
 
-    sasToken=$( azure storage container sas create --container "$artifactsStorageContainerName" --permissions r --expiry "$plusFourHoursUtc" -a "$artifactsStorageAccountName" -k "$artifactsStorageAccountKey" --json | jq -r '.sas' )
+    sasToken=$( az storage container generate-sas -n "$artifactsStorageContainerName" --permissions r --expiry "$plusFourHoursUtc" --account-name "$artifactsStorageAccountName" --account-key "$artifactsStorageAccountKey" -o json | sed 's/"//g')
 
-    blobEndpoint=$( azure storage account show "$artifactsStorageAccountName" -g "$artifactsResourceGroupName" --json | jq -r '.primaryEndpoints.blob' )
+    blobEndpoint=$( az storage account show -n "$artifactsStorageAccountName" -g "$artifactsResourceGroupName" -o json | jq -r '.primaryEndpoints.blob' )
 
     parameterJson=$( echo "$parameterJson"  | jq "{_artifactsLocation: {value: "\"$blobEndpoint$artifactsStorageContainerName"\"}, _artifactsLocationSasToken: {value: \"?"$sasToken"\"}} + ." )
 
@@ -97,18 +95,19 @@ then
     for filepath in $( find "$artifactsStagingDirectory" -type f )
     do
         relFilePath=${filepath:$artifactsStagingDirectoryLen}
-        azure storage blob upload -f $filepath --container $artifactsStorageContainerName -b $relFilePath -q -a "$artifactsStorageAccountName" -k "$artifactsStorageAccountKey"
+        echo "Uploading file $relFilePath..."
+        az storage blob upload -f $filepath --container $artifactsStorageContainerName -n $relFilePath --account-name "$artifactsStorageAccountName" --account-key "$artifactsStorageAccountKey" --verbose
     done 
 fi
 
-azure group create "$resourceGroupName" "$location"
+az group create -n "$resourceGroupName" -l "$location"
 
 # Remove line endings from parameter JSON so it can be passed in to the CLI as a single line
 parameterJson=$( echo "$parameterJson" | jq -c '.' )
 
 if [[ ! -z $validateOnly ]]
 then
-    azure group template validate -g "$resourceGroupName" -f $templateFile -p "$parameterJson" -v
+    az group deployment validate -g "$resourceGroupName" --template-file $templateFile --parameters "$parameterJson" --verbose
 else
-    azure group deployment create -g "$resourceGroupName" -n AzureRMSamples -f $templateFile -p "$parameterJson" -v
+    az group deployment create -g "$resourceGroupName" -n AzureRMSamples --template-file $templateFile --parameters "$parameterJson" --verbose
 fi

@@ -31,7 +31,7 @@
   "variables": {
     "imagePublisher": "Canonical",
     "imageOffer": "UbuntuServer",
-    "OSVersion": "16.04.0-DAILY-LTS",
+    "OSVersion": "16.04.0-LTS",
     "OSDiskName": "osdisk",
     "nicName": "myVMNic",
     "addressPrefix": "10.0.0.0/16",
