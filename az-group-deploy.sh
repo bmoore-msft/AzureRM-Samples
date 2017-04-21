@@ -49,7 +49,7 @@ fi
 
 parameterJson=$( cat "$parametersFile" | jq '.parameters' )
 
-if [[ ! -z $uploadArtifacts ]]
+if [[ $uploadArtifacts ]]
 then
 
     if [[ -z $storageAccountName ]]
@@ -105,7 +105,7 @@ az group create -n "$resourceGroupName" -l "$location"
 # Remove line endings from parameter JSON so it can be passed in to the CLI as a single line
 parameterJson=$( echo "$parameterJson" | jq -c '.' )
 
-if [[ ! -z $validateOnly ]]
+if [[ $validateOnly ]]
 then
     az group deployment validate -g "$resourceGroupName" --template-file $templateFile --parameters "$parameterJson" --verbose
 else
