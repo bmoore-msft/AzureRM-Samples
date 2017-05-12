@@ -3,18 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "adminUsername": {
-      "value": "bmoore"
-    },
-    "dnsLabelPrefix": {
-      "value": "bjmdisks"
-    },
-    "adminPassword": {
-      "reference": {
-        "keyVault": {
-          "id": "/subscriptions/ec0f79d3-16f0-4892-8165-f569a92c8273/resourceGroups/vaultsgroup/providers/Microsoft.KeyVault/vaults/bmoore-demo"
-        },
-        "secretName": "adminPass"
-      }
+      "value": "ghuser"
     }
   }
 }
