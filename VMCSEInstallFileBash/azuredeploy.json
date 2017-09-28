@@ -17,6 +17,7 @@
     },
     "_artifactsLocation": {
       "type": "string",
+      "defaultValue": "[uri(deployment().properties.templateLink.uri, '.')]",
       "metadata": {
         "description": "Auto-generated container in staging storage account to receive post-build staging folder upload"
       }
