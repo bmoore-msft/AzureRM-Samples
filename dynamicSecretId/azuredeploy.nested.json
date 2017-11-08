@@ -1,0 +1,63 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vaultName": {
+            "type": "string"
+        },
+        "secretName": {
+            "type": "string"
+        },
+        "vaultResourceGroupName": {
+            "type": "string"
+        },
+        "_artifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
+            },
+            "defaultValue": "[uri(deployment().templateLink.uri, '.')]"
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+            },
+            "defaultValue": ""
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "2017-05-10",
+            "name": "fetchSecret",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "contentVersion": "1.0.0.0",
+                    "uri": "[concat(parameters('_artifactsLocation'), '/nested.json', parameters('_artifactsLocationSasToken'))]"
+                },
+                "parameters": {
+                    "secretValue": {
+                        "reference": {
+                            "keyVault": {
+                                "id": "[resourceId(subscription().subscriptionId,  parameters('vaultResourceGroupName'), 'Microsoft.KeyVault/vaults', parameters('vaultName'))]"
+                            },
+                            "secretName": "[parameters('secretName')]"
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "dynamicSecretValue": {
+            "type": "string",
+            "metadata": {
+                "comment": "Use this value if you really want to see the secret in the deployment output",
+                "value": "[reference(resourceId('Microsoft.Resources/deployments', 'fetchSecret')).outputs.secretValueOutput.value]"
+            },
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'fetchSecret')).outputs.secretValueOutput.value]"
+        }
+    }
+}

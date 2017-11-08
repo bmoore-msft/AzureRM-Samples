@@ -1,0 +1,15 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vaultName": {
+      "value": "name of the keyVault"
+    },
+    "secretName": {
+      "value": "name of the secret"
+    },
+    "vaultResourceGroupName": {
+      "value": "name of the resource group where the keyVault is located"
+    }
+  }
+}
