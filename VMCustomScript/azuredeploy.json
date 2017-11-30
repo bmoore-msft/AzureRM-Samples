@@ -40,7 +40,7 @@
     "vmName": "MyWindowsVM",
     "virtualNetworkName": "MyVNET",
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
-    "cseScriptFolder": ".",
+    "cseScriptFolder": "scripts",
     "cseScriptFileName": "CreateFolder.ps1",
     "dnsNameForPublicIp": "[concat('vm-', uniqueString(resourceGroup().id))]"
   },
