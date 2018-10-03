@@ -77,7 +77,7 @@
                     "displayName": "msdeploy"
                 },
                 "properties": {
-                    "packageUri": "[concat(parameters('_artifactsLocation'), '/', parameters('msdeployPackageFolder'), '/', parameters('msdeployPackageFileName'), parameters('_artifactsLocationSasToken'))]",
+                    "packageUri": "[uri(parameters('_artifactsLocation'), concat(parameters('msdeployPackageFolder'), '/', parameters('msdeployPackageFileName'), parameters('_artifactsLocationSasToken')))]",
                     "dbType": "None",
                     "setParameters": {
                         "IIS Web Application Name": "[variables('webSiteName')]"

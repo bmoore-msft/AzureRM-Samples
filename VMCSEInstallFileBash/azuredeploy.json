@@ -200,7 +200,7 @@
                     "forceUpdateTag" : "changeThisToEnsureScriptRuns-maxlength=50",
                     "settings": {
                         "fileUris": [
-                            "[concat(parameters('_artifactsLocation'), '/', variables('scriptFolder'), '/', variables('scriptFileName'), parameters('_artifactsLocationSasToken'))]"
+                            "[uri(parameters('_artifactsLocation'), concat(variables('scriptFolder'), '/', variables('scriptFileName'), parameters('_artifactsLocationSasToken')))]"
                         ],
                         "commandToExecute": "[concat('bash ', variables('scriptFileName'), ' ', variables('scriptArgs'))]"
                     }

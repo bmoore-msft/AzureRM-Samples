@@ -35,7 +35,7 @@
                 "mode": "Incremental",
                 "templateLink": {
                     "contentVersion": "1.0.0.0",
-                    "uri": "[concat(parameters('_artifactsLocation'), '/nested.json', parameters('_artifactsLocationSasToken'))]"
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('nested.json', parameters('_artifactsLocationSasToken')))]"
                 },
                 "parameters": {
                     "secretValue": {

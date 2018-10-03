@@ -41,18 +41,18 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedStorageTemplateFolder'), '/', parameters('nestedStorageTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+                    "uri": "[uri(parameters('_artifactsLocation'), concat(parameters('nestedStorageTemplateFolder'), '/', parameters('nestedStorageTemplateFileName'), parameters('_artifactsLocationSasToken')))]",
                     "contentVersion": "1.0.0.0"
                 },
               "parametersLink": {
-                "uri": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedStorageTemplateFolder'), '/', parameters('nestedStorageTemplateParametersFileName'), parameters('_artifactsLocationSasToken'))]"
+                "uri": "[uri(parameters('_artifactsLocation'), concat(parameters('nestedStorageTemplateFolder'), '/', parameters('nestedStorageTemplateParametersFileName'), parameters('_artifactsLocationSasToken')))]"
               }
             }
         }
     ],
     "outputs": {
     "storageAccountName": {
-      "value": "[reference(concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Resources/deployments/nestedStorage'),'2015-01-01').outputs.storageAccountName.value]",
+      "value": "[reference('nestedStorage').outputs.storageAccountName.value]",
       "type": "string"
     }
   }

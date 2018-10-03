@@ -1,5 +1,5 @@
 #!/bin/bash -e
-while getopts "a:l:g:s:f:e:uv" opt; do
+while getopts "a:l:g:s:f:e:uvd" opt; do
     case $opt in
         a)
             artifactsStagingDirectory=$OPTARG #the folder or sample to deploy
@@ -8,7 +8,7 @@ while getopts "a:l:g:s:f:e:uv" opt; do
             location=$OPTARG #location for the deployed resource group
         ;;
         g)
-            resourceGroupName=$OPTARG
+            resourceGroupName=$OPTARG #name of the resource group to create
         ;;
         u)
             uploadArtifacts='true' #set this switch to upload/stage artifacs
@@ -23,33 +23,55 @@ while getopts "a:l:g:s:f:e:uv" opt; do
             parametersFile=$OPTARG
         ;;
         v)
-            validateOnly='true'
+            validateOnly='true' #validate the template without deploying
+        ;;
+        d)
+            devMode='true' #dev mode automatically selects a different parameter file without explicitly specifying it
         ;;
     esac
 done
     
-[[ $# -eq 0 || -z $artifactsStagingDirectory || -z $location ]] && { echo "Usage: $0 <-a foldername> <-l location> [-e parameters-file] [-g resource-group-name] [-u] [-s storageAccountName] [-v]"; exit 1; }
+[[ $# -eq 0 || -z $artifactsStagingDirectory || -z $location ]] && { echo "Usage: $0 <-a foldername> <-l location> [-e parameters-file] [-g resource-group-name] [-u] [-s storageAccountName] [-t templateFile] [-e parametersFile] [-v] [-d]"; exit 1; }
+
+export AZURE_HTTP_USER_AGENT="AzureQuickStarts $AZURE_HTTP_USER_AGENT"
 
 if [[ -z $templateFile ]]
 then
-    templateFile="$artifactsStagingDirectory/azuredeploy.json"
+    templateFile="$artifactsStagingDirectory/mainTemplate.json"
+    if [ ! -f $templateFile ]
+    then
+        templateFile="$artifactsStagingDirectory/azuredeploy.json"
+    fi
 fi
-if [[ -z $parametersFile ]]
+
+if [[ $devMode ]]
 then
-    parametersFile="$artifactsStagingDirectory/azuredeploy.parameters.json"
+    parametersFile="$artifactsStagingDirectory/azuredeploy.parameters.dev.json"
+    if [ ! -f $parametersFile ]
+    then
+        parametersFile="$artifactsStagingDirectory/azuredeploy.parameters.1.json"
+    fi        
+else
+    if [[ -z $parametersFile ]]
+    then
+        parametersFile="$artifactsStagingDirectory/azuredeploy.parameters.json"
+    fi
 fi
+
+echo "Using parameters file: "$parametersFile
 
 templateName="$( basename "${templateFile%.*}" )"
 templateDirectory="$( dirname "$templateFile")"
 
 if [[ -z $resourceGroupName ]]
 then
-    resourceGroupName=${artifactsStagingDirectory}
+    resourceGroupName=$(basename "${artifactsStagingDirectory}")
 fi
 
 parameterJson=$( cat "$parametersFile" | jq '.parameters' )
+_artifactsLocationParameter=$( cat "$templateFile" | jq '.parameters._artifactsLocation' )
 
-if [[ $uploadArtifacts ]]
+if [[ $uploadArtifacts || $_artifactsLocationParameter != null ]]
 then
 
     if [[ -z $storageAccountName ]]
@@ -67,7 +89,8 @@ then
             az storage account create -l "$location" --sku "Standard_LRS" -g "$artifactsResourceGroupName" -n "$artifactsStorageAccountName" 2>/dev/null
         fi
     else
-        artifactsResourceGroupName=$( az storage account list -o json | jq -r '.[] | select(.name == '\"$s\"') .resourceGroup' )
+        artifactsStorageAccountName=$storageAccountName
+        artifactsResourceGroupName=$( az storage account list -o json | jq -r '.[] | select(.name == '\"$storageAccountName\"') .resourceGroup' )
         if [[ -z $artifactsResourceGroupName ]] 
         then
             echo "Cannot find storageAccount: "$storageAccountName
@@ -103,21 +126,26 @@ then
 
 fi
 
-az group create -n "$resourceGroupName" -l "$location"
+# Create the resource group only if it doesn't already exist
+targetResourceGroup=$( az group list -o json | jq -r '.[] | select(.name == '\"$resourceGroupName\"')'.name )
+if [[ -z $targetResourceGroup ]] 
+then
+    az group create -n "$resourceGroupName" -l "$location"
+fi   
 
 # Remove line endings from parameter JSON so it can be passed in to the CLI as a single line
 parameterJson=$( echo "$parameterJson" | jq -c '.' )
 
 if [[ $validateOnly ]]
 then
-    if [[ $uploadArtifacts ]]
+    if [[ $uploadArtifacts || $_artifactsLocationParameter != null ]]
     then
         az group deployment validate -g "$resourceGroupName" --template-uri $templateUri --parameters "$parameterJson" --verbose
     else
         az group deployment validate -g "$resourceGroupName" --template-file $templateFile --parameters "$parameterJson" --verbose
     fi
 else
-    if [[ $uploadArtifacts ]]
+    if [[ $uploadArtifacts || $_artifactsLocationParameter != null ]]
     then
         az group deployment create -g "$resourceGroupName" -n AzureRMSamples --template-uri $templateUri --parameters "$parameterJson" --verbose
     else
