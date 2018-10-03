@@ -33,7 +33,6 @@
     "imagePublisher": "Canonical",
     "imageOffer": "UbuntuServer",
     "OSVersion": "16.04.0-LTS",
-    "OSDiskName": "osdisk",
     "nicName": "myVMNic",
     "addressPrefix": "10.0.0.0/16",
     "subnetName": "Subnet",
@@ -41,7 +40,6 @@
     "vhdStorageType": "Standard_LRS",
     "publicIPAddressName": "myPublicIP",
     "publicIPAddressType": "Dynamic",
-    "vhdStorageContainerName": "vhds",
     "vmName": "MyLinuxVM",
     "vmSize": "Standard_A2",
     "virtualNetworkName": "MyVNET",
@@ -196,7 +194,7 @@
                     "forceUpdateTag" : "changeThisToEnsureScriptRuns-maxlength=50",
                     "settings": {
                         "fileUris": [
-                            "[uri(parameters('_artifactsLocation'), concat('/', variables('scriptFolder'), '/', variables('scriptFileName'), parameters('_artifactsLocationSasToken')))]"
+                            "[uri(parameters('_artifactsLocation'), concat(variables('scriptFileName'), parameters('_artifactsLocationSasToken')))]"
                         ],
                         "commandToExecute": "[concat('bash ', variables('scriptFileName'), ' ', variables('scriptArgs'))]"
                     }
