@@ -176,7 +176,6 @@
       },
       "resources": [
           {
-            "condition": false,
                 "name": "cse",
                 "type": "extensions",
                 "location": "[resourceGroup().location]",
