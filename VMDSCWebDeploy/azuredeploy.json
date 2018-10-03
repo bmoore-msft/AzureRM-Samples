@@ -137,7 +137,7 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2017-03-30",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('vmName')]",
       "location": "[resourceGroup().location]",
@@ -165,10 +165,6 @@
             "version": "latest"
           },
           "osDisk": {
-            "name": "osdisk",
-            "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('vhdStorageName'))).primaryEndpoints.blob, 'vhds/osdisk.vhd')]"
-            },
             "caching": "ReadWrite",
             "createOption": "FromImage"
           }
@@ -186,7 +182,7 @@
               "name": "dsc",
               "type": "extensions",
               "location": "[resourceGroup().location]",
-              "apiVersion": "2015-06-15",
+              "apiVersion": "2017-03-30",
               "dependsOn": [
                   "[variables('vmName')]"
               ],
@@ -201,7 +197,7 @@
               "settings": {
                 "wmfVersion": "latest",
                 "configuration": {
-                  "url": "[concat(parameters('_artifactsLocation'), '/DSC/', replace(variables('dscConfigurationScript'), '.ps1', '.zip'))]",
+                  "url": "[uri(parameters('_artifactsLocation'), concat('DSC/', replace(variables('dscConfigurationScript'), '.ps1', '.zip'), parameters('_artifactsLocationSasToken')))]",
                   "script": "[variables('dscConfigurationScript')]",
                   "function": "Main"
                 },

@@ -90,7 +90,7 @@
     "outputs": {
     "siteUri": {
       "type": "string",
-      "value": "[reference(concat('Microsoft.Web/sites/', variables('webSiteName')), '2015-08-01').hostnames[0]]"
+      "value": "[reference(variables('webSiteName')).hostnames[0]]"
     }
   }
 }

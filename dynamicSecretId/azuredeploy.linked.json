@@ -55,7 +55,7 @@
             "type": "string",
             "metadata": {
                 "comment": "Use this value if you really want to see the secret in the deployment output",
-                "value": "[reference(resourceId('Microsoft.Resources/deployments', 'fetchSecret')).outputs.secretValueOutput.value]"
+                "value": "[reference('fetchSecret').outputs.secretValueOutput.value]"
             },
             "value": "sh!"
         }
