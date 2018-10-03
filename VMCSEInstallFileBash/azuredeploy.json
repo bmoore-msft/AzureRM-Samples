@@ -136,7 +136,7 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2017-03-30",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('vmName')]",
       "location": "[resourceGroup().location]",
@@ -164,10 +164,6 @@
             "version": "latest"
           },
           "osDisk": {
-            "name": "osdisk",
-            "vhd": {
-              "uri": "[concat('http://', variables('vhdStorageName'), '.blob.core.windows.net/', variables('vhdStorageContainerName'), '/', variables('OSDiskName'), '.vhd')]"
-            },
             "caching": "ReadWrite",
             "createOption": "FromImage"
           }
@@ -185,7 +181,7 @@
                 "name": "cse",
                 "type": "extensions",
                 "location": "[resourceGroup().location]",
-                "apiVersion": "2015-06-15",
+                "apiVersion": "2017-03-30",
                 "dependsOn": [
                     "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
                 ],
@@ -200,7 +196,7 @@
                     "forceUpdateTag" : "changeThisToEnsureScriptRuns-maxlength=50",
                     "settings": {
                         "fileUris": [
-                            "[uri(parameters('_artifactsLocation'), concat(variables('scriptFolder'), '/', variables('scriptFileName'), parameters('_artifactsLocationSasToken')))]"
+                            "[uri(parameters('_artifactsLocation'), concat('/', variables('scriptFolder'), '/', variables('scriptFileName'), parameters('_artifactsLocationSasToken')))]"
                         ],
                         "commandToExecute": "[concat('bash ', variables('scriptFileName'), ' ', variables('scriptArgs'))]"
                     }
