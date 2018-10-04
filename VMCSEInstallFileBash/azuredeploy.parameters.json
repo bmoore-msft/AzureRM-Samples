@@ -8,7 +8,7 @@
         "adminPassword": {
             "reference": {
                 "keyVault": {
-                    "id": "subscriptions/ceaedbb7-b827-4195-b55f-de9b6732010b/resourceGroups/VaultsGroup/providers/Microsoft.KeyVault/vaults/bmoore-msft"
+                    "id": "/subscriptions/ceaedbb7-b827-4195-b55f-de9b6732010b/resourceGroups/VaultsGroup/providers/Microsoft.KeyVault/vaults/bmoore-msft"
                 },
                 "secretName": "newAdminPassword"
             }
