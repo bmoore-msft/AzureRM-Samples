@@ -1,0 +1,79 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "time": {
+            "type": "string",
+            "defaultValue": "[utcNow()]",
+            "metadata": {
+                "description": "This returns the current UTC time of deployment. This function may only be used in the defaultValue of a parameter."
+            }
+        },
+        "date": {
+            "type": "string",
+            "defaultValue": "[utcNow('dd-MM-yy')]",
+            "metadata": {
+                "description": "Standard dateTime format strings are supported: https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings"
+            }
+        },
+        "guid": {
+            "type": "string",
+            "defaultValue": "[newGuid()]",
+            "metadata": {
+                "description": "This will generate a new GUID each time this template is deployed. This function may only be used in the defaultValue of a parameter."
+            }
+        },
+        "trulyUnique": {
+            "type": "string",
+            "defaultValue": "[uniqueString(newGuid())]",
+            "metadata": {
+                "description": "This will generate a new uniqueString() each time this template is deployed. This is not idempotent, use with care."
+            }
+        },
+        "trulyUniqueGuid": {
+            "type": "string",
+            "defaultValue": "[guid(newGuid())]",
+            "metadata": {
+                "description": "This will generate a new guid each time this template is deployed. The guid() function can be idempotent, used this way it is not."
+            }
+        },        
+        "monthlyUnique": {
+            "type": "string",
+            "defaultValue": "[uniqueString(utcNow('MM'))]",
+            "metadata": {
+                "description": "This will generate the same uniqueString() when it's deployed within the same month."
+            }
+        }
+    },
+    "resources": [],
+    "outputs": {
+        "time": {
+            "type": "string",
+            "value": "[parameters('time')]"
+        },
+        "date": {
+            "type": "string",
+            "value": "[parameters('date')]"
+        },
+        "guid": {
+            "type": "string",
+            "value": "[parameters('guid')]"
+        },
+        "trulyUnique": {
+            "type": "string",
+            "value": "[parameters('trulyUnique')]"
+        },
+        "trulyUniqueGuid": {
+            "type": "string",
+            "value": "[parameters('trulyUniqueGuid')]"
+        },
+        "fancy": {
+            "type": "array",
+            "value": "[split(parameters('time'), 'T')]"
+        },
+        "monthly": {
+            "type": "string",
+            "value": "[parameters('monthlyUnique')]"
+        }
+    }
+}
