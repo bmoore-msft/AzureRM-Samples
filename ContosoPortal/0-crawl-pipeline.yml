@@ -1,0 +1,53 @@
+pool:
+
+  name: Hosted VS2017
+
+
+steps:
+
+- task: AzureFileCopy@2
+
+  displayName: 'Stage Files to Azure'
+
+  inputs:
+
+    SourcePath: ContosoPortal
+
+    azureSubscription: 'bmoore sp'
+
+    Destination: AzureBlob
+
+    storage: stageceaedbb7b8274195b55
+
+    ContainerName: 'crawl-staging'
+
+    outputStorageUri: artifactsLocation
+
+    outputStorageContainerSasToken: artifactsLocationSasToken
+
+  enabled: true
+
+
+
+- task: AzureResourceGroupDeployment@2
+
+  displayName: 'Deploy Template'
+
+  inputs:
+
+    azureSubscription: 'bmoore sp'
+
+    resourceGroupName: CrawlDemoGroup
+
+    location: 'East US 2'
+
+    templateLocation: 'URL of the file'
+
+    csmFileLink: '$(artifactsLocation)azuredeploy.json$(artifactsLocationSasToken)'
+
+    csmParametersFileLink: '$(artifactsLocation)azuredeploy.parameters.dev.json$(artifactsLocationSasToken)'
+
+    overrideParameters: '-_artifactsLocationSasToken "$(artifactsLocationSasToken)"'
+
+
+

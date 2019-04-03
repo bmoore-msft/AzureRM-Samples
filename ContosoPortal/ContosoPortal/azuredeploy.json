@@ -1,0 +1,164 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Username for the Virtual Machine."
+      }
+    },
+    "adminPasswordOrKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "OS Admin password or SSH Key depending on value of authentication type"
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "The Location For the resources"
+      },
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "numberOfVms": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "maxValue": 1000,
+      "metadata": {
+        "description": "The number of VMs to provision"
+      }
+    },
+    "_artifactsLocation": {
+      "type": "string",
+      "metadata": {
+        "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
+      },
+      "defaultValue": "[deployment().properties.templateLink.uri]"
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+      },
+      "defaultValue": ""
+    }
+  },
+  "variables": {
+    "addressPrefix": "10.0.0.0/16",
+    "subnetName": "Subnet",
+    "subnetPrefix": "10.0.0.0/24",
+    "virtualNetworkName": "vnet",
+    "createVMUrl": "[uri(parameters('_artifactsLocation'), concat('modules/vm-module.json', parameters('_artifactsLocationSasToken')))]",
+    "configureVMUrl": "[uri(parameters('_artifactsLocation'), concat('modules/customScriptExtension.json', parameters('_artifactsLocationSasToken')))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2018-07-01",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('virtualNetworkName')]",
+      "location": "[parameters('Location')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('addressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('subnetPrefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[concat('multiVMZonesAS-', copyIndex())]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-05-01",
+      "dependsOn": [
+        "[variables('virtualNetworkName')]"
+      ],
+      "copy": {
+        "name": "vmLoop",
+        "count": "[parameters('numberOfVms')]"
+      },
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('createVMUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "adminPasswordOrKey": {
+            "value": "[parameters('adminPasswordOrKey')]"
+          },
+          "adminUsername": {
+            "value": "[parameters('adminUsername')]"
+          },
+          "vmName": {
+            "value": "[concat('vm-', copyIndex())]"
+          },
+          "zones": {
+            "value": "[string(add(mod(copyIndex(),3),1))]"
+          },
+          "virtualNetworkName": {
+            "value": "[variables('virtualNetworkName')]"
+          },
+          "subnetName": {
+            "value": "[variables('subnetName')]"
+          },
+          "virtualNetworkResourceGroupName": {
+            "value": "[resourceGroup().name]"
+          }
+        }
+      }
+    },
+    {
+      "name": "[concat('configureVm-', copyIndex())]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-05-01",
+      "dependsOn": [
+        "vmLoop"
+      ],
+      "copy": {
+        "name": "vmConfigLoop",
+        "count": "[parameters('numberOfVms')]"
+      },
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('configureVMUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vmName": {
+            "value": "[concat('vm-', copyIndex())]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "isWindowsOS":{
+            "value": false
+          },
+          "fileUris": {
+            "value": [
+              "[uri(parameters('_artifactsLocation'), concat('scripts/init.sh', parameters('_artifactsLocationSasToken')))]"
+            ]
+          },
+          "commandToExecute": {
+            "value": "bash init.sh"
+          }
+        }
+      }
+    }
+
+  ],
+  "outputs": {}
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "rgName": {
+      "value": "ContosoDev"
+    },
+    "rgLocation": {
+      "value": "eastus"
+    },
+    "principalId": {
+      "value": "7c1752e8-668a-4aed-9405-20d1e9daf1e6"
+    },
+    "policyName": {
+      "value": "LocationRestriction"
+    }
+  }
+}

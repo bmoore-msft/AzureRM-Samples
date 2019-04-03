@@ -1,12 +1,10 @@
-﻿#Requires -Version 3.0
-#Requires -Module AzureRM.Resources
-#Requires -Module Azure.Storage
-#Requires -Module @{ModuleName="AzureRm.Profile";ModuleVersion="3.0"}
-
+#Requires -Version 3.0
+#Requires -Module Az.Resources
+#Requires -Module Az.Storage
 
 Param(
-    [string] [Parameter(Mandatory=$true)] $ArtifactStagingDirectory,
-    [string] [Parameter(Mandatory=$true)] $ResourceGroupLocation,
+    [string] [Parameter(Mandatory = $true)] $ArtifactStagingDirectory,
+    [string] [Parameter(Mandatory = $true)][alias("ResourceGroupLocation")] $Location,
     [string] $ResourceGroupName = (Split-Path $ArtifactStagingDirectory -Leaf),
     [switch] $UploadArtifacts,
     [string] $StorageAccountName,
@@ -20,8 +18,9 @@ Param(
 )
 
 try {
-    [Microsoft.Azure.Common.Authentication.AzureSession]::ClientFactory.AddUserAgent("AzureQuickStarts-$UI$($host.name)".replace(" ","_"), "1.0")
-} catch { }
+    [Microsoft.Azure.Common.Authentication.AzureSession]::ClientFactory.AddUserAgent("AzQuickStarts-$UI$($host.name)".replace(" ", "_"), "1.0")
+}
+catch { }
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3
@@ -36,8 +35,8 @@ $OptionalParameters = New-Object -TypeName Hashtable
 $TemplateArgs = New-Object -TypeName Hashtable
 
 # if the template file isn't found, try the another default
-if(!(Test-Path $TemplateFile)) { 
-    $TemplateFile =  $ArtifactStagingDirectory + '\azuredeploy.json'
+if (!(Test-Path $TemplateFile)) { 
+    $TemplateFile = $ArtifactStagingDirectory + '\azuredeploy.json'
 }
 
 #try a few different default options for param files when the -dev switch is use
@@ -58,6 +57,17 @@ $TemplateFile = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScrip
 $TemplateParametersFile = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, $TemplateParametersFile))
 
 $TemplateJSON = Get-Content $TemplateFile -Raw | ConvertFrom-Json
+
+$TemplateSchema = $TemplateJson | Select-Object -expand '$schema' -ErrorAction Ignore
+
+if ($TemplateSchema -like '*subscriptionDeploymentTemplate.json*') {
+    $deploymentScope = "Subscription"
+}
+else {
+    $deploymentScope = "ResourceGroup"
+}
+
+Write-Host "Running a $deploymentScope scoped deployment..."
 
 $ArtifactsLocationParameter = $TemplateJson | Select-Object -expand 'parameters' -ErrorAction Ignore | Select-Object -Expand '_artifactsLocation' -ErrorAction Ignore
 
@@ -82,22 +92,22 @@ if ($UploadArtifacts -Or $ArtifactsLocationParameter -ne $null) {
         $DSCSourceFilePaths = @(Get-ChildItem $DSCSourceFolder -File -Filter '*.ps1' | ForEach-Object -Process {$_.FullName})
         foreach ($DSCSourceFilePath in $DSCSourceFilePaths) {
             $DSCArchiveFilePath = $DSCSourceFilePath.Substring(0, $DSCSourceFilePath.Length - 4) + '.zip'
-            Publish-AzureRmVMDscConfiguration $DSCSourceFilePath -OutputArchivePath $DSCArchiveFilePath -Force -Verbose
+            Publish-AzVMDscConfiguration $DSCSourceFilePath -OutputArchivePath $DSCArchiveFilePath -Force -Verbose
         }
     }
 
     # Create a storage account name if none was provided
     if ($StorageAccountName -eq '') {
-        $StorageAccountName = 'stage' + ((Get-AzureRmContext).Subscription.Id).Replace('-', '').substring(0, 19)
+        $StorageAccountName = 'stage' + ((Get-AzContext).Subscription.Id).Replace('-', '').substring(0, 19)
     }
 
-    $StorageAccount = (Get-AzureRmStorageAccount | Where-Object{$_.StorageAccountName -eq $StorageAccountName})
+    $StorageAccount = (Get-AzStorageAccount | Where-Object {$_.StorageAccountName -eq $StorageAccountName})
 
     # Create the storage account if it doesn't already exist
     if ($StorageAccount -eq $null) {
         $StorageResourceGroupName = 'ARM_Deploy_Staging'
-        New-AzureRmResourceGroup -Location "$ResourceGroupLocation" -Name $StorageResourceGroupName -Force
-        $StorageAccount = New-AzureRmStorageAccount -StorageAccountName $StorageAccountName -Type 'Standard_LRS' -ResourceGroupName $StorageResourceGroupName -Location "$ResourceGroupLocation"
+        New-AzResourceGroup -Location "$Location" -Name $StorageResourceGroupName -Force
+        $StorageAccount = New-AzStorageAccount -StorageAccountName $StorageAccountName -Type 'Standard_LRS' -ResourceGroupName $StorageResourceGroupName -Location "$Location"
     }
 
     $ArtifactStagingLocation = $StorageAccount.Context.BlobEndPoint + $StorageContainerName + "/"   
@@ -106,7 +116,7 @@ if ($UploadArtifacts -Or $ArtifactsLocationParameter -ne $null) {
     if ($OptionalParameters[$ArtifactsLocationName] -eq $null) {
         #if the defaultValue for _artifactsLocation is using the template location, use the defaultValue, otherwise set it to the staging location
         $defaultValue = $ArtifactsLocationParameter | Select-Object -Expand 'defaultValue' -ErrorAction Ignore
-        if($defaultValue -like '*deployment().properties.templateLink.uri*') {
+        if ($defaultValue -like '*deployment().properties.templateLink.uri*') {
             $OptionalParameters.Remove($ArtifactsLocationName)
         }
         else {
@@ -115,19 +125,20 @@ if ($UploadArtifacts -Or $ArtifactsLocationParameter -ne $null) {
     } 
 
     # Copy files from the local storage staging location to the storage account container
-    New-AzureStorageContainer -Name $StorageContainerName -Context $StorageAccount.Context -ErrorAction SilentlyContinue *>&1
+    New-AzStorageContainer -Name $StorageContainerName -Context $StorageAccount.Context -ErrorAction SilentlyContinue *>&1
 
     $ArtifactFilePaths = Get-ChildItem $ArtifactStagingDirectory -Recurse -File | ForEach-Object -Process {$_.FullName}
     foreach ($SourcePath in $ArtifactFilePaths) {
         
-        if ($SourcePath -like "$DSCSourceFolder*" -and $SourcePath -like "*.zip" -or !($SourcePath -like "$DSCSourceFolder*")) { #When using DSC, just copy the DSC archive, not all the modules and source files
-            Set-AzureStorageBlobContent -File $SourcePath -Blob $SourcePath.Substring($ArtifactStagingDirectory.length + 1) -Container $StorageContainerName -Context $StorageAccount.Context -Force
+        if ($SourcePath -like "$DSCSourceFolder*" -and $SourcePath -like "*.zip" -or !($SourcePath -like "$DSCSourceFolder*")) {
+            #When using DSC, just copy the DSC archive, not all the modules and source files
+            Set-AzStorageBlobContent -File $SourcePath -Blob $SourcePath.Substring($ArtifactStagingDirectory.length + 1) -Container $StorageContainerName -Context $StorageAccount.Context -Force
             #Write-host $SourcePath
         }
     }
     # Generate a 4 hour SAS token for the artifacts location if one was not provided in the parameters file
     if ($OptionalParameters[$ArtifactsLocationSasTokenName] -eq $null) {
-        $OptionalParameters[$ArtifactsLocationSasTokenName] = (New-AzureStorageContainerSASToken -Container $StorageContainerName -Context $StorageAccount.Context -Permission r -ExpiryTime (Get-Date).AddHours(4))
+        $OptionalParameters[$ArtifactsLocationSasTokenName] = (New-AzStorageContainerSASToken -Container $StorageContainerName -Context $StorageAccount.Context -Permission r -ExpiryTime (Get-Date).AddHours(4))
     }
 
     $TemplateArgs.Add('TemplateFile', $ArtifactStagingLocation + (Get-ChildItem $TemplateFile).Name + $OptionalParameters[$ArtifactsLocationSasTokenName])
@@ -143,15 +154,25 @@ else {
 
 $TemplateArgs.Add('TemplateParameterFile', $TemplateParametersFile)
 
-# Create the resource group only when it doesn't already exist
-if ((Get-AzureRmresourcegroup -Name $ResourceGroupName -Location $ResourceGroupLocation -Verbose -ErrorAction SilentlyContinue) -eq $null) {
-    New-AzureRmResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation -Verbose -Force -ErrorAction Stop
+# Create the resource group only when it doesn't already exist - and only in RG scoped deployments
+if ($deploymentScope -eq "ResourceGroup") {
+    if ((Get-AzResourcegroup -Name $ResourceGroupName -Location $Location -Verbose -ErrorAction SilentlyContinue) -eq $null) {
+        New-AzResourceGroup -Name $ResourceGroupName -Location $Location -Verbose -Force -ErrorAction Stop
+    }
 }
-
 if ($ValidateOnly) {
-    $ErrorMessages = Format-ValidationOutput (Test-AzureRmResourceGroupDeployment -ResourceGroupName $ResourceGroupName `
-                                                                                  @TemplateArgs `
-                                                                                  @OptionalParameters)
+    if ($deploymentScope -eq "Subscription") {
+        #subscription scoped deployment
+        $ErrorMessages = Format-ValidationOutput (Test-AzDeployment -Location $Location `
+                @TemplateArgs `
+                @OptionalParameters)
+    }
+    else {
+        #resourceGroup deployment 
+        $ErrorMessages = Format-ValidationOutput (Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName `
+                @TemplateArgs `
+                @OptionalParameters)
+    }
     if ($ErrorMessages) {
         Write-Output '', 'Validation returned the following errors:', @($ErrorMessages), '', 'Template is invalid.'
     }
@@ -160,12 +181,23 @@ if ($ValidateOnly) {
     }
 }
 else {
-    New-AzureRmResourceGroupDeployment -Name ((Get-ChildItem $TemplateFile).BaseName + '-' + ((Get-Date).ToUniversalTime()).ToString('MMdd-HHmm')) `
-                                       -ResourceGroupName $ResourceGroupName `
-                                       @TemplateArgs `
-                                       @OptionalParameters `
-                                       -Force -Verbose `
-                                       -ErrorVariable ErrorMessages
+    if ($deploymentScope -eq "Subscription") {
+        #subscription scoped deployment
+        New-AzDeployment -Name ((Get-ChildItem $TemplateFile).BaseName + '-' + ((Get-Date).ToUniversalTime()).ToString('MMdd-HHmm')) `
+            -Location $Location `
+            @TemplateArgs `
+            @OptionalParameters `
+            -Verbose `
+            -ErrorVariable ErrorMessages
+    }
+    else {
+        New-AzResourceGroupDeployment -Name ((Get-ChildItem $TemplateFile).BaseName + '-' + ((Get-Date).ToUniversalTime()).ToString('MMdd-HHmm')) `
+            -ResourceGroupName $ResourceGroupName `
+            @TemplateArgs `
+            @OptionalParameters `
+            -Force -Verbose `
+            -ErrorVariable ErrorMessages
+    }
     if ($ErrorMessages) {
         Write-Output '', 'Template deployment returned the following errors:', @(@($ErrorMessages) | ForEach-Object { $_.Exception.Message.TrimEnd("`r`n") })
     }

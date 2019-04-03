@@ -1,0 +1,33 @@
+pool:
+
+  name: Hosted VS2017
+
+steps:
+
+- task: CopyFiles@2
+
+  displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+
+  inputs:
+
+    Contents: |
+     *.ps1
+     **\SubscriptionSetup\**
+     **\ContosoPortal\**
+     
+
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+
+
+- powershell: '# Run Static Analysis Tests'
+
+  displayName: 'Run Static Template Tests'
+
+
+
+- task: PublishBuildArtifacts@1
+
+  displayName: 'Publish Artifact: drop'
+
+

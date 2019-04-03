@@ -1,0 +1,20 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername": {
+      "value": "prodsudo"
+    },
+    "numberOfVms": {
+      "value": 5
+    },
+    "adminPasswordOrKey": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/ceaedbb7-b827-4195-b55f-de9b6732010b/resourceGroups/VaultsGroup/providers/Microsoft.KeyVault/vaults/bmoore-msft"
+        },
+        "secretName": "newAdminPassword"
+      }
+    }
+  }
+}

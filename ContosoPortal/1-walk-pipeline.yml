@@ -1,0 +1,25 @@
+pool:
+
+  name: Hosted VS2017
+
+  demands: azureps
+
+
+
+steps:
+
+- task: AzurePowerShell@3
+
+  displayName: 'Deploy-AzTemplate.ps1'
+
+  inputs:
+
+    azureSubscription: 'bmoore sp'
+
+    ScriptPath: 'Deploy-AzTemplate.ps1'
+
+    ScriptArguments: '-ResourceGroupName ''ContosoPortalWalk' -ResourceGroupLocation 'centralus' -ArtifactStagingDirectory $(Build.SourcesDirectory)\ContosoPortal -TemplateParametersFile $(Build.SourcesDirectory)\ContosoPortal\azuredeploy.parameters.dev.json'
+
+    azurePowerShellVersion: LatestVersion
+
+

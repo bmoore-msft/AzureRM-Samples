@@ -1,0 +1,37 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "allowedLocations": {
+            "type": "array",
+            "defaultValue": [
+                "westus2",
+                "westus"
+            ]
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Authorization/policyDefinitions",
+            "name": "LocationRestriction",
+            "apiVersion": "2018-03-01",
+            "properties": {
+                "policyType": "Custom",
+                "mode": "All",
+                "parameters": {},
+                "policyRule": {
+                    "if": {
+                        "not": {
+                            "field": "location",
+                            "in": "[parameters('allowedLocations')]"
+                        }
+                    },
+                    "then": {
+                        "effect": "deny"
+                    }
+                }
+            }
+        }
+    ]
+}
