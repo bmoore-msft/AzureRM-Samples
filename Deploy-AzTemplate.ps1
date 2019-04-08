@@ -132,7 +132,7 @@ if ($UploadArtifacts -Or $ArtifactsLocationParameter -ne $null) {
         
         if ($SourcePath -like "$DSCSourceFolder*" -and $SourcePath -like "*.zip" -or !($SourcePath -like "$DSCSourceFolder*")) {
             #When using DSC, just copy the DSC archive, not all the modules and source files
-            Set-AzStorageBlobContent -File $SourcePath -Blob $SourcePath.Substring($ArtifactStagingDirectory.length + 1) -Container $StorageContainerName -Context $StorageAccount.Context -Force
+            Set-AzStorageBlobContent -File $SourcePath -Blob $SourcePath.Replace($ArtifactStagingDirectory, "") -Container $StorageContainerName -Context $StorageAccount.Context -Force
             #Write-host $SourcePath
         }
     }
@@ -141,7 +141,7 @@ if ($UploadArtifacts -Or $ArtifactsLocationParameter -ne $null) {
         $OptionalParameters[$ArtifactsLocationSasTokenName] = (New-AzStorageContainerSASToken -Container $StorageContainerName -Context $StorageAccount.Context -Permission r -ExpiryTime (Get-Date).AddHours(4))
     }
 
-    $TemplateArgs.Add('TemplateFile', $ArtifactStagingLocation + (Get-ChildItem $TemplateFile).Name + $OptionalParameters[$ArtifactsLocationSasTokenName])
+    $TemplateArgs.Add('TemplateUri', $ArtifactStagingLocation + (Get-ChildItem $TemplateFile).Name + $OptionalParameters[$ArtifactsLocationSasTokenName])
 
     $OptionalParameters[$ArtifactsLocationSasTokenName] = ConvertTo-SecureString $OptionalParameters[$ArtifactsLocationSasTokenName] -AsPlainText -Force
 
