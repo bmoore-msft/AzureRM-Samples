@@ -1,0 +1,70 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "pairedLocations": {
+      "eastasia": "southeastasia",
+      "southeastasia": "eastasia",
+      "australiaeast": "australiasoutheast",
+      "australiasoutheast": "australiaeast",
+      "australiacentral": "australiacentral2",
+      "australiacentral2": "australiacentral",
+      "brazilsouth": "southcentralus",
+      "southcentralus": "brazilsouth",
+      "canadacentral": "canadaeast",
+      "canadaeast": "canadacentral",
+      "chinanorth": "chinaeast",
+      "chinaeast": "chinanorth",
+      "chinanorth2": "chinaeast2",
+      "chinaeast2": "chinanorth2",
+      "northeurope": "westeurope",
+      "westeurope": "northeurope",
+      "francecentral": "francesouth",
+      "francesouth": "francecentral",
+      "germanycentral": "germanynNortheast",
+      "germanynNortheast": "germanycentral",
+      "centralindia": "southindia",
+      "southindia": "centralindia",
+      "westindia": "southindia",
+      "southindia": "westindia",
+      "japaneast": "japanwest",
+      "japanwest": "japaneast",
+      "koreacentral": "koreasouth",
+      "koreasouth": "koreacentral",
+      "eastus": "westus",
+      "westus": "eastus",
+      "eastus2": "centralus",
+      "centralus": "eastus2",
+      "northcentralus": "southcentralus",
+      "southcentralus": "northcentralus",
+      "westus2": "westcentralus",
+      "westcentralus": "westus2",
+      "southafricanorth": "southafricawest",
+      "southafricawest": "southafricanorth",
+      "ukwest": "uksouth",
+      "uksouth": "ukwest",
+      "uaenorth": "uaecentral",
+      "uaecentral": "uaenorth",
+      "usdodeast": "usdodcentral",
+      "usdodcentral": "usdodeast",
+      "usgovarizona": "usgovtexas",
+      "usgovtexas": "usgovarizona",
+      "usgoviowa": "usgovvirginia",
+      "usgovvirginia": "usgoviowa",
+      "usgovvirginia": "usgovtexas",
+      "usgovtexas": "usgovvirginia"
+    }
+  },
+  "resources": [],
+  "outputs": {
+    "pairedLocation": {
+      "type": "string",
+      "value": "[variables('pairedLocations')[parameters('location')]]"
+    }
+  }
+}
