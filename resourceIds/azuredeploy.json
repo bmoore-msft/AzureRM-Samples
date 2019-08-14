@@ -1,0 +1,34 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+  },
+  "resources": [
+  ],
+  "outputs": {
+    "simpleResourceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Storage/storageAccount', 'somestorage')]"
+    },
+    "vmssPublicIpId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Compute/virtualMachineScaleSets/virtualMachines/networkInterfacres/ipConfigurations/publicIpAddresses', 'someVMSS', '0', 'nicName', 'ipConfigName', 'publicIpName')]"
+      },
+    "subscriptionResourceId": {
+      "type": "string",
+      "value": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'someResourceGroup')]"
+    },
+    "ContributorRoleSubResourceId": {
+      "type": "string",
+      "value": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]"
+    },
+    "tenantResourceId": {
+      "type": "string",
+      "value": "[tenantResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]"
+    },
+    "extensionResourceId": {
+      "type": "string",
+      "value": "[extensionResourceId(resourceId('Microsoft.Compute/virtualMachines', 'someVM'), 'Microsoft.ManagedIdentity/Identities', 'default')]"
+    }
+  }
+}
