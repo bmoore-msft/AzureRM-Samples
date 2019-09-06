@@ -1,0 +1,42 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "variables": {
+        // this works with property copy as well
+        "copy": [
+            {
+                "name": "emptyArray",
+                "count": 0,
+                "input": "[concat('item', copyIndex('emptyArray', 1))]"
+            }
+        ]
+    },
+    "resources": [
+        {
+            // this will not be deployed since count is zero
+            "name": "notDeployed",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-05-10",
+            "dependsOn": [],
+            "copy": {
+                "count": 0,
+                "name": "copyZero"
+            },
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": []
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "emptyArray": {
+            "type": "array",
+            "value": "[variables('emptyArray')]"
+        }
+    }
+}
