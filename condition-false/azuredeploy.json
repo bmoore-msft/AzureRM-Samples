@@ -1,0 +1,25 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "variables": {},
+    "resources": [ 
+    {
+      //Deploy once to create the resource, then deploy again with condition false in COMPLETE mode and the resource will be removed.
+      "condition": true,
+      "type": "Microsoft.Compute/availabilitySets",
+      "apiVersion": "2018-04-01",
+      "name": "AvailabilitySet",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Aligned"
+      },
+      "properties": {
+        "PlatformUpdateDomainCount": 2,
+        "PlatformFaultDomainCount": 2
+      }
+    }
+],
+    "outputs": {
+    }
+}

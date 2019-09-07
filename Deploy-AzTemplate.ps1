@@ -15,6 +15,7 @@ Param(
     [switch] $BuildDscPackage,
     [switch] $ValidateOnly,
     [string] $DebugOptions = "None",
+    [string] $Mode = "Incremental",
     [string] $DeploymentName = ((Split-Path $TemplateFile -LeafBase) + '-' + ((Get-Date).ToUniversalTime()).ToString('MMdd-HHmm')),
     [switch] $Dev
 )
@@ -201,6 +202,7 @@ else {
             -ResourceGroupName $ResourceGroupName `
             @TemplateArgs `
             @OptionalParameters `
+            -Mode $Mode `
             -Force -Verbose `
             -ErrorVariable ErrorMessages
     }
