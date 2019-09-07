@@ -22,4 +22,3 @@ azure-group-deploy.sh -a [foldername] -l eastus
 ```
 These scripts are also used in CICD pipelines just as they are on the command line which helps stream line the dev/test lifecycle.
 
-<iframe src="https://www.w3schools.com"></iframe>
