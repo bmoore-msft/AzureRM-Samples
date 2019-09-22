@@ -5,4 +5,3 @@ This sample shows:
 - How to use PowerShell or the CLI to "stage" artifacts into Azure storage for deployment
     - So you don't have to use a public github url
     
-
