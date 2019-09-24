@@ -21,3 +21,4 @@ Run the script and point the script to the folder for the sample you want to dep
 azure-group-deploy.sh -a [foldername] -l eastus
 ```
 These scripts are also used in CICD pipelines just as they are on the command line which helps stream line the dev/test lifecycle.
+
