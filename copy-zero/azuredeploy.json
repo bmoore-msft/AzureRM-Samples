@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {},
     "variables": {
-        // this works with property copy as well
+        "comment": "this also works with property copy",
         "copy": [
             {
                 "name": "emptyArray",
@@ -14,7 +14,7 @@
     },
     "resources": [
         {
-            // this will not be deployed since count is zero
+            "comments": "this will not be deployed since count is zero",
             "name": "notDeployed",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-05-10",
