@@ -15,7 +15,6 @@ Param(
     [switch] $BuildDscPackage,
     [switch] $ValidateOnly,
     [string] $DebugOptions = "None",
-    [string] $Mode = "Incremental",
     [string] $DeploymentName = ((Split-Path $TemplateFile -LeafBase) + '-' + ((Get-Date).ToUniversalTime()).ToString('MMdd-HHmm')),
     [switch] $Dev
 )
@@ -116,6 +115,9 @@ if ($UploadArtifacts -Or $ArtifactsLocationParameter -ne $null) {
         $StorageAccount = New-AzStorageAccount -StorageAccountName $StorageAccountName -Type 'Standard_LRS' -ResourceGroupName $StorageResourceGroupName -Location "$Location"
     }
 
+    if ($StorageContainerName.length -gt 63) {
+        $StorageContainerName = $StorageContainerName.Substring(0, 63)
+    }
     $ArtifactStagingLocation = $StorageAccount.Context.BlobEndPoint + $StorageContainerName + "/"   
 
     # Generate the value for artifacts location if it is not provided in the parameter file
@@ -202,7 +204,6 @@ else {
             -ResourceGroupName $ResourceGroupName `
             @TemplateArgs `
             @OptionalParameters `
-            -Mode $Mode `
             -Force -Verbose `
             -ErrorVariable ErrorMessages
     }
