@@ -16,6 +16,7 @@
       },
     "subscriptionResourceId": {
       "type": "string",
+      // this isn't working as expected, we still need to fix it...  it works fine for other types, just not Microsoft.Resources/resourceGroups
       "value": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'someResourceGroup')]"
     },
     "ContributorRoleSubResourceId": {
