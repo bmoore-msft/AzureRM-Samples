@@ -4,6 +4,9 @@
   "parameters": {
     "mgName": {
       "value": "bmoore-mgmt-group"
+    },
+    "policyName": {
+      "value": "LocationRestriction"
     }
   }
 }
