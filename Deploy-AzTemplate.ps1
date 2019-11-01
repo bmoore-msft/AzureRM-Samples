@@ -4,7 +4,7 @@
 
 Param(
     [string] [Parameter(Mandatory = $true)] $ArtifactStagingDirectory,
-    [string] [Parameter(Mandatory = $true)][alias("ResourceGroupLocation")] $Location,
+    [string] [Parameter(Mandatory = $false)] $Location,
     [string] $ResourceGroupName = (Split-Path $ArtifactStagingDirectory -Leaf),
     [switch] $UploadArtifacts,
     [string] $StorageAccountName,
@@ -165,7 +165,7 @@ Write-Host ($OptionalParameters | Out-String)
 
 # Create the resource group only when it doesn't already exist - and only in RG scoped deployments
 if ($deploymentScope -eq "ResourceGroup") {
-    if ((Get-AzResourceGroup -Name $ResourceGroupName -Location $Location -Verbose -ErrorAction SilentlyContinue) -eq $null) {
+    if ((Get-AzResourceGroup -Name $ResourceGroupName -ErrorAction SilentlyContinue) -eq $null) {
         New-AzResourceGroup -Name $ResourceGroupName -Location $Location -Verbose -Force -ErrorAction Stop
     }
 }

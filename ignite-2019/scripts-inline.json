@@ -41,12 +41,18 @@
             },
             "kind": "AzurePowerShell",
             "properties": {
-                "azPowerShellVersion": "2.7",
                 "forceUpdateTag": "[parameters('newGuid')]", // can use this to trigger execution for otherwise duplicate PUTs
+                "azPowerShellVersion": "2.7",
                 "timeout": "PT30M",
                 "retentionInterval": "P1D",
                 "cleanupPreference": "OnSuccess",
                 "arguments": "[format(' -vaultName {0} -certificateName {1} -subjectName {2}', parameters('vaultName'), parameters('certificateName'), parameters('subjectName'))]", // can pass an arguement string, double quotes must be escaped
+                "environmentVariables": [
+                    {
+                        "name": "someSecret",
+                        "secureValue": "if this is really a secret, don't put it here... in plain text..."
+                    }
+                ],
                 "scriptContent": "
 
                     param(
@@ -71,14 +77,7 @@
                     $DeploymentScriptOutputs = New-Object -TypeName hashtable
                     $DeploymentScriptOutputs['certThumbprint'] = $cert.Thumbprint
 
-                ",
-                // these are passed into the ACI instance as environment variables
-                "environmentVariables": [
-                    {
-                        "name": "SqlConnectionString",
-                        "secureValue": "test"
-                    }
-                ]
+                "
             }
         }
     ],

@@ -1,0 +1,81 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "userAssignedIdentity": {
+            "type": "string",
+            "defaultValue": "/subscriptions/ceaedbb7-b827-4195-b55f-de9b6732010b/resourceGroups/bjm/providers/Microsoft.ManagedIdentity/userAssignedIdentities/bjm-msi"
+        },
+        "newGuid": {
+            "type": "string",
+            "defaultValue": "[newGuid()]"
+        },
+        "vaultName": {
+            "type": "string",
+            "defaultValue": "bmoore-scratch"
+        },
+        "certificateName": {
+            "type": "string",
+            "defaultValue": "ignite2019"
+        },
+        "subjectName": {
+            "type": "string",
+            "defaultValue": "CN=contoso.com"
+        },
+        "_artifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
+            },
+            "defaultValue": "[deployment().properties.templateLink.uri]"
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+            },
+            "defaultValue": ""
+        }
+
+    },
+    "variables": {
+        "scriptName": "createCert"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deploymentScripts",
+            "apiVersion": "2019-10-01-preview",
+            "name": "[variables('scriptName')]", // default value is newGuid() expression, so it will execute every time
+            "location": "[resourceGroup().location]",
+            "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                    "[parameters('userAssignedIdentity')]": {
+                    }
+                }
+            },
+            "kind": "AzurePowerShell",
+            "properties": {
+                "forceUpdateTag": "[parameters('newGuid')]", // can use this to trigger execution for otherwise duplicate PUTs
+                "azPowerShellVersion": "2.7",
+                "timeout": "PT30M",
+                "retentionInterval": "P1D",
+                "cleanupPreference": "OnSuccess",
+                "arguments": "[format(' -vaultName {0} -certificateName {1} -subjectName {2}', parameters('vaultName'), parameters('certificateName'), parameters('subjectName'))]", // can pass an arguement string, double quotes must be escaped
+                "environmentVariables": [
+                    {
+                        "name": "someSecret",
+                        "secureValue": "if this is really a secret, don't put it here... in plain text..."
+                    }
+                ],
+                "PrimaryScriptUri": "[uri(parameters('_artifactsLocation'), concat('Create-Cert.ps1', parameters('_artifactsLocationSasToken')))]"
+            }
+        }
+    ],
+    "outputs": {
+        "test": {
+            "type": "string",
+            "value": "[reference(variables('scriptName')).outputs.certThumbprint]"
+        }
+    }
+}
