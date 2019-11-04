@@ -20,5 +20,5 @@ while($cert.Thumbprint -eq $null){
 }
 
 $DeploymentScriptOutputs = New-Object -TypeName hashtable
-$DeploymentScriptOutputs['cert'] = $cert
+$DeploymentScriptOutputs['certThumbprint'] = $cert.Thumbprint
 $DeploymentScriptOutputs['cert'] | Out-String

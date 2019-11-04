@@ -18,7 +18,6 @@
             "name": "notDeployed",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-05-10",
-            "dependsOn": [],
             "copy": {
                 "count": 0,
                 "name": "copyZero"

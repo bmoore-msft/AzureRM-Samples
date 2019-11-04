@@ -9,21 +9,21 @@ param(
 )
 
 #Check if app already exists
-$app = Get-AzureRmADApplication -DisplayName $DisplayName
+$app = Get-AzADApplication -DisplayName $DisplayName
 
 if($app -eq $null){
     Write-Host "Creating App..."
-    $app = New-AzureRmADApplication -DisplayName $DisplayName `
+    $app = New-AzADApplication -DisplayName $DisplayName `
                                     -HomePage $HomePage `
                                     -IdentifierUris $HomePage `
                                     -Password $(ConvertTo-SecureString $Password -AsPlainText -force)
 }
 
 #Check if SP already exists
-$sp = Get-AzureRmADServicePrincipal -ApplicationId $app.ApplicationId
+$sp = Get-AzADServicePrincipal -ApplicationId $app.ApplicationId
 if($sp -eq $null){
     Write-Host "Creating SP..."
-    $sp = New-AzureRmADServicePrincipal -ApplicationId $app.ApplicationId
+    $sp = New-AzADServicePrincipal -ApplicationId $app.ApplicationId
 }
 
 Write-Host $sp.ApplicationId

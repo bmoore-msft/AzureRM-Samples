@@ -17,36 +17,46 @@
     },
     "_artifactsLocation": {
       "type": "string",
+      "defaultValue": "[deployment().properties.templateLink.uri]",
       "metadata": {
         "description": "Auto-generated container in staging storage account to receive post-build staging folder upload"
       }
     },
     "_artifactsLocationSasToken": {
       "type": "securestring",
+      "defaultValue": "",
       "metadata": {
         "description": "Auto-generated token to access _artifactsLocation"
+      }
+    },
+    "vmSize": {
+      "type":"string",
+      "defaultValue": "Standard_A2",
+      "metadata": {
+        "description": "Size of the virtual machine"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
       }
     }
   },
   "variables": {
     "imagePublisher": "MicrosoftWindowsServer",
     "imageOffer": "WindowsServer",
-    "OSDiskName": "osdiskforwindowssimple",
+    "windowsOSVersion": "2012-R2-Datacenter",
     "nicName": "myVMNic",
     "addressPrefix": "10.0.0.0/16",
     "subnetName": "Subnet",
     "subnetPrefix": "10.0.0.0/24",
-    "vhdStorageType": "Standard_LRS",
     "publicIPAddressName": "myPublicIP",
     "publicIPAddressType": "Dynamic",
-    "vhdStorageContainerName": "vhds",
     "vmName": "MyWindowsVM",
-    "vmSize": "Standard_A2",
     "virtualNetworkName": "MyVNET",
-    "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
-    "subnetRef": "[concat(variables('vnetId'), '/subnets/', variables('subnetName'))]",
-    "vhdStorageName": "[concat('vhdstorage', uniqueString(resourceGroup().id))]",
-    "windowsOSVersion": "2012-R2-Datacenter",
+    "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', variables('virtualNetworkName') ,variables('subnetName'))]",
     "dnsNameForPublicIp": "[concat('vm-', uniqueString(resourceGroup().id))]",
     "cseScriptFolder": ".",
     "cseScriptFileName": "Copy-FileFromAzure.ps1",
@@ -55,22 +65,10 @@
   },
   "resources": [
     {
-      "type": "Microsoft.Storage/storageAccounts",
-      "name": "[variables('vhdStorageName')]",
-      "apiVersion": "2015-06-15",
-      "location": "[resourceGroup().location]",
-      "tags": {
-        "displayName": "StorageAccount"
-      },
-      "properties": {
-        "accountType": "[variables('vhdStorageType')]"
-      }
-    },
-    {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2019-06-01",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('publicIPAddressName')]",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('location')]",
       "tags": {
         "displayName": "PublicIPAddress"
       },
@@ -82,10 +80,10 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2019-06-01",
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('virtualNetworkName')]",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('location')]",
       "tags": {
         "displayName": "VirtualNetwork"
       },
@@ -106,10 +104,10 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2019-06-01",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('nicName')]",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('location')]",
       "tags": {
         "displayName": "NetworkInterface"
       },
@@ -135,20 +133,19 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2019-03-01",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('vmName')]",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('location')]",
       "tags": {
         "displayName": "VirtualMachine"
       },
       "dependsOn": [
-        "[variables('vhdStorageName')]",
         "[variables('nicName')]"
       ],
       "properties": {
         "hardwareProfile": {
-          "vmSize": "[variables('vmSize')]"
+          "vmSize": "[parameters('vmSize')]"
         },
         "osProfile": {
           "computerName": "[variables('vmName')]",
@@ -163,10 +160,6 @@
             "version": "latest"
           },
           "osDisk": {
-            "name": "osdisk",
-            "vhd": {
-              "uri": "[concat('http://', variables('vhdStorageName'), '.blob.core.windows.net/', variables('vhdStorageContainerName'), '/', variables('OSDiskName'), '.vhd')]"
-            },
             "caching": "ReadWrite",
             "createOption": "FromImage"
           }
@@ -183,8 +176,8 @@
         {
           "name": "cse",
           "type": "extensions",
-          "location": "[resourceGroup().location]",
-          "apiVersion": "2015-06-15",
+          "location": "[parameters('location')]",
+          "apiVersion": "2019-03-01",
           "dependsOn": [
             "[variables('vmName')]"
           ],

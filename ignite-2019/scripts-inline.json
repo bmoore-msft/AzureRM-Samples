@@ -82,9 +82,13 @@
         }
     ],
     "outputs": {
-        "test": {
+        "Thumbprint": {
             "type": "string",
             "value": "[reference(variables('scriptName')).outputs.certThumbprint]"
+        },
+        "scriptOutput": {
+            "type":"object",
+            "value":"[reference(variables('scriptName'))]"
         }
     }
 }

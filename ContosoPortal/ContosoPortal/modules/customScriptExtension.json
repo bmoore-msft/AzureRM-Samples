@@ -39,30 +39,28 @@
     {
       "condition": "[parameters('isWindowsOS')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "apiVersion": "2017-03-30",
+      "apiVersion": "2019-03-01",
       "name": "[concat(parameters('vmName'), '/', variables('extensionNameWindows'))]",
       "location": "[parameters('location')]",
-      "dependsOn": [ ],
       "properties": {
         "publisher": "Microsoft.Compute",
         "type": "CustomScriptExtension",
         "typeHandlerVersion": "1.8",
         "autoUpgradeMinorVersion": true,
         "settings": {
-          "fileUris": "[parameters('fileUris')]",
-          "commandToExecute": "[parameters('commandToExecute')]"
+          "fileUris": "[parameters('fileUris')]"
         },
         "protectedSettings": {
+          "commandToExecute": "[parameters('commandToExecute')]"
         }
       }
     },
     {
       "condition": "[not(parameters('isWindowsOS'))]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "apiVersion": "2017-03-30",
+      "apiVersion": "2019-03-01",
       "name": "[concat(parameters('vmName'), '/', variables('extensionNameLinux'))]",
       "location": "[parameters('location')]",
-      "dependsOn": [ ],
       "properties": {
         "publisher": "Microsoft.Azure.Extensions",
         "type": "CustomScript",
