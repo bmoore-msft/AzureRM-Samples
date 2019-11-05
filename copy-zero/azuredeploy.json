@@ -14,7 +14,11 @@
     },
     "resources": [
         {
+            //resouces have a comment property (and metadata)
             "comments": "this will not be deployed since count is zero",
+            "metadata": {
+                "note": "the metadata property is ignored by ARM"
+            },
             "name": "notDeployed",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-05-10",
