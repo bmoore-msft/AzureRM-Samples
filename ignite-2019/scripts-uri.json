@@ -45,7 +45,7 @@
         {
             "type": "Microsoft.Resources/deploymentScripts",
             "apiVersion": "2019-10-01-preview",
-            "name": "[variables('scriptName')]", // default value is newGuid() expression, so it will execute every time
+            "name": "[variables('scriptName')]", 
             "location": "[resourceGroup().location]",
             "identity": {
                 "type": "UserAssigned",
@@ -56,12 +56,12 @@
             },
             "kind": "AzurePowerShell",
             "properties": {
-                "forceUpdateTag": "[parameters('newGuid')]", // can use this to trigger execution for otherwise duplicate PUTs
+                "forceUpdateTag": "[parameters('newGuid')]", 
                 "azPowerShellVersion": "2.7",
                 "timeout": "PT30M",
                 "retentionInterval": "P1D",
                 "cleanupPreference": "OnSuccess",
-                "arguments": "[format(' -vaultName {0} -certificateName {1} -subjectName {2}', parameters('vaultName'), parameters('certificateName'), parameters('subjectName'))]", // can pass an arguement string, double quotes must be escaped
+                "arguments": "[format(' -vaultName {0} -certificateName {1} -subjectName {2}', parameters('vaultName'), parameters('certificateName'), parameters('subjectName'))]", 
                 "environmentVariables": [
                     {
                         "name": "someSecret",
