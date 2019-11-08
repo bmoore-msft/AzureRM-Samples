@@ -46,7 +46,8 @@
                 "timeout": "PT30M",
                 "retentionInterval": "P1D",
                 "cleanupPreference": "OnSuccess",
-                "arguments": "[format(' -vaultName {0} -certificateName {1} -subjectName {2}', parameters('vaultName'), parameters('certificateName'), parameters('subjectName'))]", // can pass an arguement string, double quotes must be escaped
+                "arguments": "[format(' -vaultName {0} -certificateName {1} -subjectName {2}', 
+                                       parameters('vaultName'), parameters('certificateName'), parameters('subjectName'))]", // can pass an arguement string, double quotes must be escaped
                 "environmentVariables": [
                     {
                         "name": "someSecret",
