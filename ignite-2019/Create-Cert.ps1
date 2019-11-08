@@ -21,3 +21,5 @@ while($cert.Thumbprint -eq $null){
 $DeploymentScriptOutputs = New-Object -TypeName hashtable
 $DeploymentScriptOutputs['certThumbprint'] = $cert.Thumbprint
 $cert | Out-String
+
+# Is this thing idempotent?
