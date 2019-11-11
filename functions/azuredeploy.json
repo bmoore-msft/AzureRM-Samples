@@ -10,7 +10,7 @@
         },
         "cloud": {
             "type": "string",
-            "value": "[environment().name]"
+            "value": "[environment().name]" // properties vary by cloud capabilities but "name" is always there
         }
     }
 }

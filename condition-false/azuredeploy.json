@@ -5,7 +5,8 @@
     "variables": {},
     "resources": [ 
     {
-      //Deploy once to create the resource, then deploy again with condition false in COMPLETE mode and the resource will be removed.
+      // Deploy once to create the resource
+      // Next, deploy again with condition false in COMPLETE mode and the resource will be removed.
       "condition": true,
       "type": "Microsoft.Compute/availabilitySets",
       "apiVersion": "2018-04-01",

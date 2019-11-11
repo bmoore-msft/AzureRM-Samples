@@ -8,7 +8,7 @@
         "bar": {
             "condition": false,
             "type": "string",
-            "value": "[invalidFunction()]"
+            "value": "[invalidFunction()]" //this will not cause an error because condtion is false
         }
     }
 }
