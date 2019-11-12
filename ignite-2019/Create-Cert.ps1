@@ -4,6 +4,8 @@
 [string] [Parameter(Mandatory=$false)] $subjectName
 )
 
+$ErrorActionPreference = 'Stop'
+
 $policy = New-AzKeyVaultCertificatePolicy -SubjectName $subjectName -IssuerName Self -ValidityInMonths 12 -Verbose
 
 # private key is added as a secret that can be retrieved in the ARM template
