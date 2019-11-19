@@ -1,0 +1,63 @@
+﻿{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "secretName": {
+            "value": "bigSecureObject"
+        },
+        "secretValue": {
+            "value": {
+                "s00": "not secret in plain text",
+                "s01": "not secret in plain text",
+                "s02": "not secret in plain text",
+                "s03": "not secret in plain text",
+                "s04": "not secret in plain text",
+                "s05": "not secret in plain text",
+                "s06": "not secret in plain text",
+                "s07": "not secret in plain text",
+                "s08": "not secret in plain text",
+                "s09": "not secret in plain text",
+                "s10": "not secret in plain text",
+                "s12": "not secret in plain text",
+                "s13": "not secret in plain text",
+                "s14": "not secret in plain text",
+                "s15": "not secret in plain text",
+                "s16": "not secret in plain text",
+                "s17": "not secret in plain text",
+                "s18": "not secret in plain text",
+                "s19": "not secret in plain text",
+                "s20": "not secret in plain text",
+                "s21": "not secret in plain text",
+                "s22": "not secret in plain text",
+                "s23": "not secret in plain text",
+                "s24": "not secret in plain text",
+                "s25": "not secret in plain text",
+                "s26": "not secret in plain text",
+                "s27": "not secret in plain text",
+                "s28": "not secret in plain text",
+                "s29": "not secret in plain text",
+                "s30": "not secret in plain text",
+                "s31": "not secret in plain text",
+                "s32": "not secret in plain text",
+                "s33": "not secret in plain text",
+                "s34": "not secret in plain text",
+                "s35": "not secret in plain text",
+                "s36": "not secret in plain text",
+                "s37": "not secret in plain text",
+                "s38": "not secret in plain text",
+                "s39": "not secret in plain text",
+                "s40": "not secret in plain text",
+                "s41": "not secret in plain text",
+                "s42": "not secret in plain text",
+                "s43": "not secret in plain text",
+                "s44": "not secret in plain text",
+                "s45": "not secret in plain text",
+                "s46": "not secret in plain text",
+                "s47": "not secret in plain text",
+                "s48": "not secret in plain text",
+                "s49": "not secret in plain text",
+                "s50": "not secret in plain text"
+            }
+        }
+    }
+}

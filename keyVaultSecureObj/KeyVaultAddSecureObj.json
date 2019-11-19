@@ -1,0 +1,57 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "keyVaultName": {
+      "type": "string",
+      "defaultValue": "[uniqueString(resourceGroup().id)]",
+      "metadata": {
+        "description": "Name of the vault"
+      }
+    },
+    "secretName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the secret to store in the vault"
+      }
+    },
+    "secretValue": {
+      "type": "secureObject",
+      "metadata": {
+        "description": "Value of the secret to store in the vault"
+      }
+    }
+  },
+  "variables": { },
+  "resources": [
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2018-02-14",
+      "name": "[parameters('keyVaultName')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "KeyVault"
+      },
+      "properties": {
+        "sku": {
+          "name": "Standard",
+          "family": "A"
+        },
+        "enabledForTemplateDeployment": true,
+        "tenantId": "[subscription().tenantId]",
+        "accessPolicies": [ ]
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2018-02-14",
+      "name": "[concat(parameters('keyVaultName'), '/', parameters('secretName'))]",
+      "dependsOn":[
+        "[parameters('keyVaultName')]"
+      ],
+      "properties": {
+        "value": "[string(parameters('secretValue'))]"
+      }
+    }
+  ]
+}

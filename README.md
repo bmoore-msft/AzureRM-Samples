@@ -1,4 +1,5 @@
 # Azure Resource Manager Samples
+
 This repo has a handful of scenario based samples for using Azure Resource Manager Templates.  Also included are scripts that will deploy the template *and* any related artifacts (configuration scripts, nested templates) required for the template deployment.
 
 These scripts are the same scripts used in the [Azure QuickStart repo](https://github.com/Azure/azure-quickstart-templates) and the Azure SDK in Visual Studio (VS scripts are probably older) and follow the same best practices for parameterizing templates for staged artifacts.
@@ -6,6 +7,7 @@ These scripts are the same scripts used in the [Azure QuickStart repo](https://g
 The scripts will deploy a resource group or subscription scoped template using the appropriate schema.
 
 So the script has 2 parts:
+
 1) Uploading artifacts to storage and providing parameter values in the template for the artifacts' location and sasToken (more on this [below](#deployment-artifacts))
 2) Creating the resource group (in a Resource Group Scoped Deployment) and deploying the template.
 
@@ -14,6 +16,7 @@ Just run the script and point the script to the folder for the sample you want t
 ```PowerShell
 .\Deploy-AzTemplate.ps1 -ArtifactsStagingDirectory '[foldername]' -Location 'eastus'
 ```
+
 ```bash
 azure-group-deploy.sh -a [foldername] -l eastus
 ```
