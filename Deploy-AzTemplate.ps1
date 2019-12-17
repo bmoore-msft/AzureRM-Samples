@@ -4,7 +4,7 @@
 
 Param(
     [string] [Parameter(Mandatory = $true)] $ArtifactStagingDirectory,
-    [string] [Parameter(Mandatory = $false)] $Location,
+    [string] [Parameter(Mandatory = $true)][alias("ResourceGroupLocation")] $Location,
     [string] $ResourceGroupName = (Split-Path $ArtifactStagingDirectory -Leaf),
     [switch] $UploadArtifacts,
     [string] $StorageAccountName,
@@ -71,6 +71,7 @@ if ($TemplateSchema -like '*subscriptionDeploymentTemplate.json*') {
 }
 else {
     $deploymentScope = "ResourceGroup"
+    $OptionalParameters.Add('Mode', $Mode)
 }
 
 Write-Host "Running a $deploymentScope scoped deployment..."
@@ -84,9 +85,14 @@ if ($UploadArtifacts -Or $ArtifactsLocationParameter -ne $null) {
     $DSCSourceFolder = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, $DSCSourceFolder))
 
     # Parse the parameter file and update the values of artifacts location and artifacts location SAS token if they are present
-    $JsonParameters = Get-Content $TemplateParametersFile -Raw | ConvertFrom-Json
-    if (($JsonParameters | Get-Member -Type NoteProperty 'parameters') -ne $null) {
-        $JsonParameters = $JsonParameters.parameters
+    if (Test-Path $TemplateParametersFile) {
+        $JsonParameters = Get-Content $TemplateParametersFile -Raw | ConvertFrom-Json
+        if (($JsonParameters | Get-Member -Type NoteProperty 'parameters') -ne $null) {
+            $JsonParameters = $JsonParameters.parameters
+        }
+    }
+    else {
+        $JsonParameters = @{ }
     }
     $ArtifactsLocationName = '_artifactsLocation'
     $ArtifactsLocationSasTokenName = '_artifactsLocationSasToken'
@@ -158,14 +164,15 @@ else {
 
 }
 
-$TemplateArgs.Add('TemplateParameterFile', $TemplateParametersFile)
-
+if(Test-Path $TemplateParametersFile){
+    $TemplateArgs.Add('TemplateParameterFile', $TemplateParametersFile)
+}
 Write-Host ($TemplateArgs | Out-String)
 Write-Host ($OptionalParameters | Out-String)
 
 # Create the resource group only when it doesn't already exist - and only in RG scoped deployments
 if ($deploymentScope -eq "ResourceGroup") {
-    if ((Get-AzResourceGroup -Name $ResourceGroupName -ErrorAction SilentlyContinue) -eq $null) {
+    if ((Get-AzResourceGroup -Name $ResourceGroupName -Location $Location -Verbose -ErrorAction SilentlyContinue) -eq $null) {
         New-AzResourceGroup -Name $ResourceGroupName -Location $Location -Verbose -Force -ErrorAction Stop
     }
 }
@@ -202,7 +209,6 @@ else {
             -ResourceGroupName $ResourceGroupName `
             @TemplateArgs `
             @OptionalParameters `
-            -Mode $Mode `
             -Force -Verbose `
             -ErrorVariable ErrorMessages
     }
