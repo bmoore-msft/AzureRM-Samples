@@ -65,6 +65,16 @@
                 "count": "[parameters('count')]",
                 "input": "[reference(concat('nic-', copyIndex())).ipConfigurations[0].properties.privateIPAddress]"
             }
+        },
+        "objectArray": {
+            "type": "array",
+            "copy": {
+                "count": 3,
+                "input": {
+                    "name": "[array(json('[\"one\",\"two\",\"three\"]'))[copyIndex()]]",
+                    "value": "[copyIndex(1)]"
+                }
+            }
         }
     }
 }
