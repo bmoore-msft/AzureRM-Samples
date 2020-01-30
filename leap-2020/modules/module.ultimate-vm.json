@@ -110,6 +110,11 @@
     "publicIpNewOrExisting": {
       "type": "string",
       "defaultValue": "new",
+      "allowedValues": [
+        "new",
+        "existing",
+        "none"
+      ],
       "metadata": {
         "description": "Determines whether or not a new public ip should be provisioned."
       }
@@ -309,7 +314,7 @@
       "condition": "[not(empty(parameters('availabilitySetName')))]",
       "type": "Microsoft.Compute/availabilitySets",
       "apiVersion": "2019-07-01",
-      "name": "[if(not(empty(parameters('availabilitySetName'))), parameters('availabilitySetName'), 'none')]",
+      "name": "[if(not(empty(parameters('availabilitySetName'))), parameters('availabilitySetName'), 'none')]", //resources must have a name
       "location": "[parameters('location')]",
       "properties": {
         "PlatformUpdateDomainCount": 2,
@@ -363,7 +368,7 @@
               "subnet": {
                 "id": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), parameters('subnetName'))]"
               },
-              "publicIPAddress": "[if(not(equals(parameters('publicIpNewOrExisting'), 'none')), variables('publicIpAddressId') , json('null'))]"
+              "publicIPAddress": "[if(not(equals(parameters('publicIpNewOrExisting'), 'none')), variables('publicIpAddressId'), json('null'))]"
             }
           }
         ]
@@ -392,7 +397,7 @@
           "computerName": "[parameters('vmName')]",
           "adminUsername": "[parameters('adminUsername')]",
           "adminPassword": "[parameters('adminPasswordOrKey')]",
-          "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]",
+          "linuxConfiguration": "[if(variables('isWindowsOS'), json('null'), variables('linuxConfiguration'))]",
           "windowsConfiguration": "[if(variables('isWindowsOS'), variables('windowsConfiguration'), json('null'))]"
         },
         "storageProfile": {
@@ -429,8 +434,7 @@
       }
     },
     {
-      "condition": "[and(not(empty(parameters('managedIdentityRoleDefinitionIds'))), 
-                         equals(parameters('managedIdentity'), 'SystemAssigned'))]",
+      "condition": "[and(not(empty(parameters('managedIdentityRoleDefinitionIds'))), equals(parameters('managedIdentity'), 'SystemAssigned'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2019-04-01-preview",
       "name": "[guid(resourceId('Microsoft.Compute/virtualMachines', parameters('vmName')), string(copyIndex()))]",
