@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "mgName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the management group for the deployment"
+      }
+    },
+    "policyName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the policy or policy set to apply to the resourceGroup"
+      }
+    }
+  },
+  "variables": {
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Authorization/policyAssignments",
+      "name": "LockMGLocations",
+      "apiVersion": "2019-06-01",
+      "properties": {
+        "scope": "[tenantResourceId('Microsoft.Management/managementGroups', parameters('mgName'))]",
+        "policyDefinitionId": "[extensionResourceId(tenantResourceId('Microsoft.Management/managementGroups', parameters('mgName')),'Microsoft.Authorization/policyDefinitions', parameters('policyName'))]"
+      }
+    }
+  ],
+  "outputs": {
+    "test": {
+      "type": "object",
+      "value": "[deployment()]"
+    }
+  }
+}

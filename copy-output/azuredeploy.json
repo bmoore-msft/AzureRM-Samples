@@ -1,0 +1,80 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "count": {
+            "type": "int",
+            "defaultValue": 3
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "name": "vnet",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2019-06-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.0.0.0/16"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "subnet",
+                        "properties": {
+                            "addressPrefix": "10.0.0.0/24"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[concat('nic-', copyIndex())]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2019-06-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "vnet"
+            ],
+            "copy": {
+                "name": "nicLoop",
+                "count": "[parameters('count')]"
+            },
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipConfig",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'vnet', 'subnet')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "outputs": {
+        "ipAddresses": {
+            "type": "array",
+            "copy": {
+                "count": "[parameters('count')]",
+                "input": "[reference(concat('nic-', copyIndex())).ipConfigurations[0].properties.privateIPAddress]"
+            }
+        },
+        "objectArray": {
+            "type": "array",
+            "copy": {
+                "count": 3,
+                "input": {
+                    "name": "[array(json('[\"one\",\"two\",\"three\"]'))[copyIndex()]]",
+                    "value": "[copyIndex(1)]"
+                }
+            }
+        }
+    }
+}

@@ -1,1 +1,11 @@
-ContosoPortal/ContosoPortal/modules/.vscode/settings.json
+**/.vscode/settings.json
+
+# local template parameters
+**/azuredeploy.parameters.local.json
+**/azuredeploy.parameters.dev.json
+**/azuredeploy.parameters.*.json
+**/prereq.azuredeploy.parameters.*.json
+
+# secrets
+**/*.pfx
+**/*.cer

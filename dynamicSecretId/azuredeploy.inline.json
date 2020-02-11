@@ -1,5 +1,5 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "vaultName": {
@@ -13,7 +13,6 @@
         }
     },
     "variables": {
-        "COMMENT": "Note, this sample doesn't currently work as expected but we're working on it - it's here because it will likely be fixed and I won't update the repo right away."
     },
     "resources": [
         {
@@ -22,18 +21,24 @@
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
                 "template": {
-                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
                     "parameters": {
                         "secretValue": {
                             "type": "securestring"
                         }
                     },
-                    "resources": [],
+                    "resources": [
+                    ],
                     "outputs": {
-                        "secretValueOutput": {
-                            "type": "secureString",
+                        // Never put a secret in an output in practice, it's no longer secret if you do
+                        // I just didn't want to spin up a resource for the sample...
+                        "secretValueOutput": { 
+                            "type": "string",
                             "value": "[parameters('secretValue')]"
                         }
                     }
@@ -42,7 +47,7 @@
                     "secretValue": {
                         "reference": {
                             "keyVault": {
-                                "id": "[resourceId(subscription().subscriptionId,  parameters('vaultResourceGroupName'), 'Microsoft.KeyVault/vaults', parameters('vaultName'))]"
+                                "id": "[resourceId(parameters('vaultResourceGroupName'), 'Microsoft.KeyVault/vaults', parameters('vaultName'))]"
                             },
                             "secretName": "[parameters('secretName')]"
                         }
@@ -50,6 +55,5 @@
                 }
             }
         }
-    ],
-    "outputs": {}
+    ]
 }

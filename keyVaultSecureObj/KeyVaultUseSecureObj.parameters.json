@@ -1,0 +1,14 @@
+﻿{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "secretValue": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/ceaedbb7-b827-4195-b55f-de9b6732010b/resourceGroups/keyVaultSecureObj/providers/Microsoft.KeyVault/vaults/bfrnkppcm6ok4"
+        },
+        "secretName": "bigSecureObject"
+      }
+    }
+  }
+}

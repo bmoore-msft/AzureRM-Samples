@@ -1,5 +1,5 @@
 {
-  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
   },
@@ -13,10 +13,9 @@
     "vmssPublicIpId": {
       "type": "string",
       "value": "[resourceId('Microsoft.Compute/virtualMachineScaleSets/virtualMachines/networkInterfacres/ipConfigurations/publicIpAddresses', 'someVMSS', '0', 'nicName', 'ipConfigName', 'publicIpName')]"
-      },
+    },
     "subscriptionResourceId": {
       "type": "string",
-      // this isn't working as expected, we still need to fix it...  it works fine for other types, just not Microsoft.Resources/resourceGroups
       "value": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'someResourceGroup')]"
     },
     "ContributorRoleSubResourceId": {
@@ -30,6 +29,10 @@
     "extensionResourceId": {
       "type": "string",
       "value": "[extensionResourceId(resourceId('Microsoft.Compute/virtualMachines', 'someVM'), 'Microsoft.ManagedIdentity/Identities', 'default')]"
+    },
+    "managementGroupResourceId": {
+      "type": "string",
+      "value": "[extensionResourceId(tenantResourceId('Microsoft.Management/managementGroups', 'mgId'), 'Microsoft.Authorization/policyDefinitions', 'policyName')]"
     }
   }
 }
