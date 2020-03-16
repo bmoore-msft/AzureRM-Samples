@@ -1,5 +1,5 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "userAssignedIdentity": {
@@ -45,30 +45,33 @@
         {
             "type": "Microsoft.Resources/deploymentScripts",
             "apiVersion": "2019-10-01-preview",
-            "name": "[variables('scriptName')]", 
+            "name": "[variables('scriptName')]", // script will re-run with a unique name or changes to the resource's properties
             "location": "[resourceGroup().location]",
             "identity": {
                 "type": "UserAssigned",
                 "userAssignedIdentities": {
-                    "[parameters('userAssignedIdentity')]": {
-                    }
+                    "[parameters('userAssignedIdentity')]": { }
                 }
             },
-            "kind": "AzurePowerShell",
+            "kind": "AzurePowerShell", // CLI is another kind
             "properties": {
                 "forceUpdateTag": "[parameters('newGuid')]", 
                 "azPowerShellVersion": "2.7",
-                "timeout": "PT30M",
-                "retentionInterval": "P1D",
-                "cleanupPreference": "OnSuccess",
-                "arguments": "[format(' -vaultName {0} -certificateName {1} -subjectName {2}', parameters('vaultName'), parameters('certificateName'), parameters('subjectName'))]", 
+                "timeout": "PT30M", // timeout in case your code hangs ;)
+                "retentionInterval": "P1D", // how long to retain the deploymentScript resource
+                "cleanupPreference": "OnSuccess",  // other options Always or on OnExpiration
+                
+                "PrimaryScriptUri": "[uri(parameters('_artifactsLocation'), concat('Create-Cert.ps1', parameters('_artifactsLocationSasToken')))]",
+                
+                "arguments": "[format(' -vaultName {0} -certificateName {1} -subjectName {2}', 
+                                        parameters('vaultName'), parameters('certificateName'), parameters('subjectName'))]", 
+                
                 "environmentVariables": [
                     {
                         "name": "someSecret",
-                        "secureValue": "if this is really a secret, don't put it here... in plain text..."
+                        "secureValue": "if this is really a secret, don't put it here in plain text... pass it as an arg."
                     }
-                ],
-                "PrimaryScriptUri": "[uri(parameters('_artifactsLocation'), concat('Create-Cert.ps1', parameters('_artifactsLocationSasToken')))]"
+                ]
             }
         }
     ],
