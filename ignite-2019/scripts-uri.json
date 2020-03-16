@@ -55,7 +55,7 @@
             },
             "kind": "AzurePowerShell", // CLI is another kind
             "properties": {
-                "forceUpdateTag": "[parameters('newGuid')]", 
+                "forceUpdateTag": "[parameters('newGuid')]", // if this changes (and no other properties) the script will run
                 "azPowerShellVersion": "2.7",
                 "timeout": "PT30M", // timeout in case your code hangs ;)
                 "retentionInterval": "P1D", // how long to retain the deploymentScript resource
