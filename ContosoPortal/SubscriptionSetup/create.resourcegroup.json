@@ -82,9 +82,9 @@
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2017-05-01",
               "properties": {
-                "roleDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/roleDefinitions/', parameters('roleDefinitionId'))]",
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', parameters('roleDefinitionId'))]",
                 "principalId": "[parameters('principalId')]",
-                "scope": "[concat(subscription().id, '/resourceGroups/', parameters('rgName'))]"
+                "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', parameters('rgName'))]"
               }
             },
             {
@@ -92,8 +92,8 @@
               "name": "LockRGLocations",
               "apiVersion": "2018-03-01",
               "properties": {
-                "scope": "[concat(subscription().id, '/resourcegroups/', parameters('rgName'))]",
-                "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/', parameters('policyName'))]"
+                "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', parameters('rgName'))]",
+                "policyDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions/', parameters('policyName'))]"
               }
             }
           ]

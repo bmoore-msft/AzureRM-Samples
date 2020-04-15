@@ -257,6 +257,13 @@
       "metadata": {
         "description": "Check to see if the publicIp SKU is Standard when using zones."
       }
+    },
+    "debug": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "When set will output some template information useful for debugging"
+      }
     }
   },
   "variables": {
@@ -460,6 +467,7 @@
       "value": "[if(equals(parameters('publicIpNewOrExisting'), 'none'), 'no public ip', reference(resourceId(parameters('publicIpResourceGroupName'), 'Microsoft.Network/publicIPAddresses', parameters('publicIpName')), '2019-09-01').dnsSettings.fqdn)]"
     },
     "debug": {
+      "condition": "[parameters('debug')]",
       "type": "object",
       "value": {
         "validateAvailabilitySet": "[parameters('validateAvailabilitySet')]",
