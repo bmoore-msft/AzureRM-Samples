@@ -1,0 +1,89 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "length": {
+            "type": "int",
+            "defaultValue": 24,
+            "minValue": 12,
+            "maxValue": 32,
+            "metadata": {
+                "description": "Length of the password"
+            }
+        },
+        "seed": {
+            "type": "securestring",
+            "defaultValue": "[toUpper(replace(newGuid(), '-', ''))]",
+            "metadata": {
+                "description": "Random seed for the password"
+            }
+        },
+        "symbolMap": {
+            "type": "secureobject",
+            "defaultValue": {
+                "0": "~",
+                "1": "!",
+                "2": "@",
+                "3": "#",
+                "4": "$",
+                "5": "%",
+                "6": "^",
+                "7": "&",
+                "8": "*",
+                "9": "(",
+                "A": ")",
+                "B": "<",
+                "C": ">",
+                "D": "-",
+                "E": "_",
+                "F": "?"
+            },
+            "metadata": {
+                "description": "Symbol Map for non-alphanumeric chars"
+            }
+        },
+        "lowerCaseMap": {
+            "type": "secureobject",
+            "defaultValue": {
+                "0": "z",
+                "1": "h",
+                "2": "x",
+                "3": "g",
+                "4": "v",
+                "5": "u",
+                "6": "t",
+                "7": "s",
+                "8": "r",
+                "9": "q",
+                "A": "p",
+                "B": "i",
+                "C": "n",
+                "D": "m",
+                "E": "k",
+                "F": "j"
+            },
+            "metadata": {
+                "description": "Symbol Map for lowercase chars"
+            }
+        }
+    },
+    "variables": {
+        "symbolChar": "[parameters('symbolMap')[substring(parameters('seed'), 4, 1)]]",  //can change which chars are used for replacement
+        "lowerChar": "[parameters('lowerCaseMap')[substring(parameters('seed'), 8, 1)]]",
+        "password": "[concat(variables('lowerChar'), take(parameters('seed'), sub(parameters('length'), 2)), variables('symbolChar'))]",
+        "simplePassword":"[concat('x&', take(parameters('seed'), 22))]" // hard code the complexity requirements not met by the guid chars
+
+    },
+    "resources": [],
+    "outputs": {
+        //never put a secret in the outputs of a template - outputs are available to anyone with READ permission.
+        "outputsAreNotSecret": {
+            "type": "string",
+            "value": "[variables('password')]"
+        },
+        "simplePassword": {
+            "type": "string",
+            "value": "[variables('simplePassword')]"
+        }
+    }
+}
