@@ -1,0 +1,66 @@
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subscriptions": {
+            "type": "array"
+        },
+        "scopesToDeploy": {
+            "type": "array"
+        }
+    },
+    "resources": [
+        {
+            "name": "[concat('sub-', parameters('subscriptions')[copyIndex()])]",
+            "type": "Microsoft.Resources/deployments",
+            "location": "[deployment().location]",
+            "apiVersion": "2019-10-01",
+            "copy": {
+                "name": "subscriptionLoop",
+                "count": "[length(parameters('subscriptions'))]"
+            },
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "subscription": {
+                        "value": "[parameters('subscriptions')[copyIndex()].subscription]" 
+                    },
+                    "parentManagementGroup": {
+                        "value": "[parameters('subscriptions')[copyIndex()].parentName]"
+                    },
+                    "scopesToDeploy": {
+                        "value": "[parameters('scopesToDeploy')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "subscription": {
+                            "type": "string"
+                        },
+                        "parentManagementGroup": {
+                            "type": "string"
+                        },
+                        "scopesToDeploy": {
+                            "type": "array"
+                        }
+                    },
+                    "resources": [
+                        {
+                            "condition": "[contains(parameters('scopesToDeploy'), parameters('parentManagementGroup'))]",
+                            "type": "Microsoft.Management/managementGroups/subscriptions",
+                            "apiVersion": "2020-05-01",
+                            "name": "[concat(parameters('parentManagementGroup'), '/', parameters('subscription'))]",
+                            "properties": {}
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

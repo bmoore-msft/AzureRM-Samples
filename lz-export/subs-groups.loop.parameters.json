@@ -1,0 +1,20 @@
+{
+  "contentVersion": "1.0.0.0",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "parameters": {
+    "subscriptions": {
+      "value": [
+        {
+          "displayName": "bmoore",
+          "subscription": "ceaedbb7-b827-4195-b55f-de9b6732010b",
+          "parentName": "bmoore-mgmt-group"
+        },
+        {
+          "displayName": "QuickStarts Services",
+          "subscription": "60bf0ebb-15da-4333-a0b9-9c8bcd865b48",
+          "parentName": "greatgrandchild-A-C-A"
+        }
+      ]
+    }
+  }
+}

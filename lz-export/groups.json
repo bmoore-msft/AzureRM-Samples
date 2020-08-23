@@ -1,32 +1,144 @@
-
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "groups": {
-            "type": "array"
-        }
+  "contentVersion": "1.0.0.0",
+  "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+  "resources": [
+    {
+      "type": "Microsoft.Management/managementGroups",
+      "apiVersion": "2020-05-01",
+      "name": "bmoore-mgmt-group",
+      "dependsOn": null,
+      "properties": {
+        "details": null,
+        "displayName": "BMoore's subscriptions"
+      }
     },
-    "resources": [
-        {
-            "type": "Microsoft.Management/managementGroups",
-            "apiVersion": "2020-05-01",
-            "name": "[parameters('groups')[copyIndex()].name]",
-            "copy": {
-                "count": "[length(parameters('groups'))]",
-                "name": "group-loop",
-                "mode": "serial"
-            },
-            "properties": {
-                "displayName": "[parameters('groups')[copyIndex()].displayName]",
-                "details": {
-                    "parent": {
-                        "id": "[if(not(empty(parameters('groups')[copyIndex()].parentName)), 
-                                   tenantResourceId('Microsoft.Management/managementGroups', parameters('groups')[copyIndex()].parentName), 
-                                   json('null'))]"
-                    }
-                }
-            }
-        }
-    ]
+    {
+      "type": "Microsoft.Management/managementGroups",
+      "apiVersion": "2020-05-01",
+      "name": "child-b",
+      "dependsOn": [
+        "[tenantResourceId('Microsoft.Management/managementGroups', 'bmoore-mgmt-group')]"
+      ],
+      "properties": {
+        "details": {
+          "parent": {
+            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'bmoore-mgmt-group')]"
+          }
+        },
+        "displayName": "Child B"
+      }
+    },
+    {
+      "type": "Microsoft.Management/managementGroups",
+      "apiVersion": "2020-05-01",
+      "name": "grandchild-b-2",
+      "dependsOn": [
+        "[tenantResourceId('Microsoft.Management/managementGroups', 'child-b')]"
+      ],
+      "properties": {
+        "details": {
+          "parent": {
+            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'child-b')]"
+          }
+        },
+        "displayName": "Grandchild B-2"
+      }
+    },
+    {
+      "type": "Microsoft.Management/managementGroups",
+      "apiVersion": "2020-05-01",
+      "name": "grandchild-b-1",
+      "dependsOn": [
+        "[tenantResourceId('Microsoft.Management/managementGroups', 'child-b')]"
+      ],
+      "properties": {
+        "details": {
+          "parent": {
+            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'child-b')]"
+          }
+        },
+        "displayName": "Grandchild B-1"
+      }
+    },
+    {
+      "type": "Microsoft.Management/managementGroups",
+      "apiVersion": "2020-05-01",
+      "name": "child-a",
+      "dependsOn": [
+        "[tenantResourceId('Microsoft.Management/managementGroups', 'bmoore-mgmt-group')]"
+      ],
+      "properties": {
+        "details": {
+          "parent": {
+            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'bmoore-mgmt-group')]"
+          }
+        },
+        "displayName": "Child A"
+      }
+    },
+    {
+      "type": "Microsoft.Management/managementGroups",
+      "apiVersion": "2020-05-01",
+      "name": "grandchild-a-c",
+      "dependsOn": [
+        "[tenantResourceId('Microsoft.Management/managementGroups', 'child-a')]"
+      ],
+      "properties": {
+        "details": {
+          "parent": {
+            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'child-a')]"
+          }
+        },
+        "displayName": "Grandchild A-C"
+      }
+    },
+    {
+      "type": "Microsoft.Management/managementGroups",
+      "apiVersion": "2020-05-01",
+      "name": "greatgrandchild-A-C-A",
+      "dependsOn": [
+        "[tenantResourceId('Microsoft.Management/managementGroups', 'grandchild-a-c')]"
+      ],
+      "properties": {
+        "details": {
+          "parent": {
+            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'grandchild-a-c')]"
+          }
+        },
+        "displayName": "Greatgrandchild A-C-A"
+      }
+    },
+    {
+      "type": "Microsoft.Management/managementGroups",
+      "apiVersion": "2020-05-01",
+      "name": "grandchild-a-b",
+      "dependsOn": [
+        "[tenantResourceId('Microsoft.Management/managementGroups', 'child-a')]"
+      ],
+      "properties": {
+        "details": {
+          "parent": {
+            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'child-a')]"
+          }
+        },
+        "displayName": "Grandchild A-B"
+      }
+    },
+    {
+      "type": "Microsoft.Management/managementGroups",
+      "apiVersion": "2020-05-01",
+      "name": "grandchild-a-a",
+      "dependsOn": [
+        "[tenantResourceId('Microsoft.Management/managementGroups', 'child-a')]"
+      ],
+      "properties": {
+        "details": {
+          "parent": {
+            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'child-a')]"
+          }
+        },
+        "displayName": "Grandchild A-A"
+      }
+    }
+  ]
 }

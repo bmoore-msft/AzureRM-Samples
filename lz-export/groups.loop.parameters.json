@@ -1,0 +1,55 @@
+{
+  "contentVersion": "1.0.0.0",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "parameters": {
+    "groups": {
+      "value": [
+        {
+          "displayName": "BMoore's subscriptions",
+          "name": "bmoore-mgmt-group",
+          "parentName": ""
+        },
+        {
+          "name": "child-b",
+          "displayName": "Child B",
+          "parentName": "bmoore-mgmt-group"
+        },
+        {
+          "name": "grandchild-b-2",
+          "displayName": "Grandchild B-2",
+          "parentName": "child-b"
+        },
+        {
+          "name": "grandchild-b-1",
+          "displayName": "Grandchild B-1",
+          "parentName": "child-b"
+        },
+        {
+          "name": "child-a",
+          "displayName": "Child A",
+          "parentName": "bmoore-mgmt-group"
+        },
+        {
+          "name": "grandchild-a-c",
+          "displayName": "Grandchild A-C",
+          "parentName": "child-a"
+        },
+        {
+          "name": "greatgrandchild-A-C-A",
+          "displayName": "Greatgrandchild A-C-A",
+          "parentName": "grandchild-a-c"
+        },
+        {
+          "name": "grandchild-a-b",
+          "displayName": "Grandchild A-B",
+          "parentName": "child-a"
+        },
+        {
+          "name": "grandchild-a-a",
+          "displayName": "Grandchild A-A",
+          "parentName": "child-a"
+        }
+      ]
+    }
+  }
+}

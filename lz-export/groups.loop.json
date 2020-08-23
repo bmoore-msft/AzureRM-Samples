@@ -1,0 +1,32 @@
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "groups": {
+            "type": "array"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Management/managementGroups",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('groups')[copyIndex()].name]",
+            "copy": {
+                "count": "[length(parameters('groups'))]",
+                "name": "group-loop",
+                "mode": "serial"
+            },
+            "properties": {
+                "displayName": "[parameters('groups')[copyIndex()].displayName]",
+                "details": {
+                    "parent": {
+                        "id": "[if(not(empty(parameters('groups')[copyIndex()].parentName)), 
+                                   tenantResourceId('Microsoft.Management/managementGroups', parameters('groups')[copyIndex()].parentName), 
+                                   json('null'))]"
+                    }
+                }
+            }
+        }
+    ]
+}
