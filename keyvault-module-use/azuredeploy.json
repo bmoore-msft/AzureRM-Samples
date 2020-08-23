@@ -1,0 +1,59 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "objectId": {
+        "type": "string",
+        "metadata": {
+          "description": "ServicePrincipal that needs access to the vault."
+        }
+      }
+    },
+    "variables": {},
+    "resources": [
+      {
+        "name": "vaultDeployment",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2019-10-01",
+        "dependsOn": [],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/modules/Microsoft.KeyVault/vaults/1.0/azuredeploy.json",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "enabledForDiskEncryption": {
+              "value": true
+            },
+            "accessPolicies": {
+              "value": [
+                {
+                  "tenantId": "[subscription().tenantId]",
+                  "ojectId": "[parameters('objectId')]",
+                  "permissions": {
+                    "keys": [
+                      "get", "unwrapKey", "wrapKey"
+                    ]
+                  }
+                }
+  
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "outputs": {
+      "keyVaultName": {
+        "type": "string",
+        "value": ""
+      },
+      "keyVaultResourceGroup": {
+        "type": "string",
+        "value": "[resourceGroup().name]"
+      }
+    }
+  }
+  
+  
