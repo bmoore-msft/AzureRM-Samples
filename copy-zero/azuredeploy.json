@@ -19,11 +19,12 @@
             "metadata": {
                 "note": "the metadata property is ignored by ARM"
             },
-            "name": "notDeployed",
+            //"condition": "[greater(variables('emptyArray'),0)]",
+            "name": "[if(greater(length(variables('emptyArray')),0), variables('emptyArray')[copyIndex()], 'notDeployed')]",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-05-10",
             "copy": {
-                "count": 0,
+                "count": "[length(variables('emptyArray'))]",
                 "name": "copyZero"
             },
             "properties": {

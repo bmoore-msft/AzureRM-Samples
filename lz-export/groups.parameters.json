@@ -1,0 +1,55 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "groups": {
+      "value": [
+        {
+          "name": "export-root",
+          "displayName": "export-root",
+          "parentName": ""
+        },
+        {
+          "name": "child-a",
+          "displayName": "Child A",
+          "parentName": "export-root"
+        },
+        {
+          "name": "grandchild-a-a",
+          "displayName": "Grandchild A-A",
+          "parentName": "child-a"
+        },
+        {
+          "name": "grandchild-a-b",
+          "displayName": "Grandchild A-B",
+          "parentName": "child-a"
+        },
+        {
+          "name": "grandchild-a-c",
+          "displayName": "Grandchild A-C",
+          "parentName": "child-a"
+        },
+        {
+          "name": "greatgrandchild-A-C-A",
+          "displayName": "Greatgrandchild A-C-A",
+          "parentName": "grandchild-a-c"
+        },
+        {
+          "name": "child-b",
+          "displayName": "Child B",
+          "parentName": "export-root"
+        },
+        {
+          "name": "grandchild-b-1",
+          "displayName": "Grandchild B-1",
+          "parentName": "child-b"
+        },
+        {
+          "name": "grandchild-b-2",
+          "displayName": "Grandchild B-2",
+          "parentName": "child-b"
+        }
+      ]
+    }
+  }
+}
