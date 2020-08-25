@@ -5,7 +5,7 @@
     {
       "type": "Microsoft.Management/managementGroups",
       "apiVersion": "2020-05-01",
-      "name": "bmoore-mgmt-group",
+      "name": "bjm",
       "dependsOn": null,
       "properties": {
         "displayName": "bjm",

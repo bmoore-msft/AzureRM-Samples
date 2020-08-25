@@ -1,11 +1,15 @@
+<#
+Export all managementGroups and children (managementGroups and subscriptions) under the specified root
+#>
 
 param(
     [string] [Parameter(mandatory = $true)]$root
 )
 
+# function to recurse the managementGroup heirarchy
 function Get-Children($id, $children, [array]$output){
 
-    Write-Host "Handling: $id"
+    Write-Host "Group: $id"
     
     foreach($c in $children){
         Get-Children $c.id $c.children $output
@@ -31,19 +35,21 @@ function Get-Children($id, $children, [array]$output){
     return $output
 }
 
-$mg = Get-AzManagementGroup -GroupName $root -Expand -Recurse
-
 $output = @([ordered]@{})
+
+# Get the top-level or root group for export
+$mg = Get-AzManagementGroup -GroupName $root -Expand -Recurse
 
 $output = Get-Children $mg.id $mg.children $output
 
+# The top-level group is the last one added before reversing the array
 $output = $output += @{
-    name = 'bmoore-mgmt-group'
+    name = $root
     displayName = $mg.displayName
     parentName = ""
 }
 
-#reverse the array, because sequence matters for the loop and improves readability in the template
+# reverse the array, because sequence matters for the loop and improves readability in the template
 $orderedOutput = [array]::Reverse($output)
 
 # Separate the MG and the Subscriptions as they have different lifecycles and need different files
@@ -54,13 +60,13 @@ foreach($item in $output){
     if($item.Contains('subscription')){
         $subs += $item
     }else{
-
         if($item.count -gt 0){
             $mgs += $item
         }
     }
 }
 
+# Create the param file for the managementGroup template that uses a copy loop
 $mgParamFile = @{
     '$schema' = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#"
     contentVersion = "1.0.0.0"
@@ -71,6 +77,7 @@ $mgParamFile = @{
     }
 }
 
+# Create the param file for the subscription template
 $subParamFile = @{
     '$schema' = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#"
     contentVersion = "1.0.0.0"
@@ -81,10 +88,8 @@ $subParamFile = @{
     }
 }
 
+# Alternative approach to create a single template file for managementGroups, common case is a small number of groups
 $mgTemplateFile = @{}
-
-$mgParamFile | ConvertTo-Json -Depth 30 | Set-Content -path ".\groups.loop.parameters.json" 
-$subParamFile | ConvertTo-Json -Depth 30 | Set-Content -path ".\subs-groups.loop.parameters.json"
 
 # create a template file with each group
 
@@ -124,4 +129,7 @@ $mgTemplate = @{
     resources = $resources
 }
 
-$mgTemplate | ConvertTo-Json -Depth 30 | Set-Content -path ".\groups.json" 
+# Write the files
+$mgTemplate | ConvertTo-Json -Depth 30 | Set-Content -path ".\managementGroups.json" 
+$mgParamFile | ConvertTo-Json -Depth 30 | Set-Content -path ".\managementGroups.loop.parameters.json" 
+$subParamFile | ConvertTo-Json -Depth 30 | Set-Content -path ".\subscriptions-managementGroups.loop.parameters.json"

@@ -8,13 +8,15 @@
         }
     },
     "resources": [
+        // this is a serial loop that requires dependency ordering via the parameters file
+        // the parent group of any MG must be deployed first
         {
             "type": "Microsoft.Management/managementGroups",
             "apiVersion": "2020-05-01",
             "name": "[parameters('groups')[copyIndex()].name]",
             "copy": {
                 "count": "[length(parameters('groups'))]",
-                "name": "group-loop",
+                "name": "managementGroup-loop",
                 "mode": "serial"
             },
             "properties": {
