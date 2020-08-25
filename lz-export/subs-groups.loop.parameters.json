@@ -5,14 +5,14 @@
     "subscriptions": {
       "value": [
         {
-          "displayName": "bmoore",
-          "subscription": "ceaedbb7-b827-4195-b55f-de9b6732010b",
-          "parentName": "bmoore-mgmt-group"
+          "displayName": "Management",
+          "subscription": "553b8572-7d61-4f37-a0b8-01eb4b95fdb6",
+          "parentName": "bjm-management"
         },
         {
-          "displayName": "QuickStarts Services",
-          "subscription": "60bf0ebb-15da-4333-a0b9-9c8bcd865b48",
-          "parentName": "greatgrandchild-A-C-A"
+          "displayName": "LZ WVD",
+          "subscription": "561c147a-8acc-4984-8878-7c13f228917e",
+          "parentName": "bjm-online"
         }
       ]
     }

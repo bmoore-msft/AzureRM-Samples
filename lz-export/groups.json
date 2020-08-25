@@ -8,136 +8,104 @@
       "name": "bmoore-mgmt-group",
       "dependsOn": null,
       "properties": {
-        "details": null,
-        "displayName": "BMoore's subscriptions"
+        "displayName": "bjm",
+        "details": null
       }
     },
     {
       "type": "Microsoft.Management/managementGroups",
       "apiVersion": "2020-05-01",
-      "name": "child-b",
+      "name": "bjm-platform",
       "dependsOn": [
-        "[tenantResourceId('Microsoft.Management/managementGroups', 'bmoore-mgmt-group')]"
+        "[tenantResourceId('Microsoft.Management/managementGroups', 'bjm')]"
       ],
       "properties": {
+        "displayName": "bjm-platform",
         "details": {
           "parent": {
-            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'bmoore-mgmt-group')]"
+            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'bjm')]"
           }
-        },
-        "displayName": "Child B"
+        }
       }
     },
     {
       "type": "Microsoft.Management/managementGroups",
       "apiVersion": "2020-05-01",
-      "name": "grandchild-b-2",
+      "name": "bjm-management",
       "dependsOn": [
-        "[tenantResourceId('Microsoft.Management/managementGroups', 'child-b')]"
+        "[tenantResourceId('Microsoft.Management/managementGroups', 'bjm-platform')]"
       ],
       "properties": {
+        "displayName": "bjm-management",
         "details": {
           "parent": {
-            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'child-b')]"
+            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'bjm-platform')]"
           }
-        },
-        "displayName": "Grandchild B-2"
+        }
       }
     },
     {
       "type": "Microsoft.Management/managementGroups",
       "apiVersion": "2020-05-01",
-      "name": "grandchild-b-1",
+      "name": "bjm-decomissioned",
       "dependsOn": [
-        "[tenantResourceId('Microsoft.Management/managementGroups', 'child-b')]"
+        "[tenantResourceId('Microsoft.Management/managementGroups', 'bjm')]"
       ],
       "properties": {
+        "displayName": "bjm-decomissioned",
         "details": {
           "parent": {
-            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'child-b')]"
+            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'bjm')]"
           }
-        },
-        "displayName": "Grandchild B-1"
+        }
       }
     },
     {
       "type": "Microsoft.Management/managementGroups",
       "apiVersion": "2020-05-01",
-      "name": "child-a",
+      "name": "bjm-sandboxes",
       "dependsOn": [
-        "[tenantResourceId('Microsoft.Management/managementGroups', 'bmoore-mgmt-group')]"
+        "[tenantResourceId('Microsoft.Management/managementGroups', 'bjm')]"
       ],
       "properties": {
+        "displayName": "bjm-sandboxes",
         "details": {
           "parent": {
-            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'bmoore-mgmt-group')]"
+            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'bjm')]"
           }
-        },
-        "displayName": "Child A"
+        }
       }
     },
     {
       "type": "Microsoft.Management/managementGroups",
       "apiVersion": "2020-05-01",
-      "name": "grandchild-a-c",
+      "name": "bjm-landingzones",
       "dependsOn": [
-        "[tenantResourceId('Microsoft.Management/managementGroups', 'child-a')]"
+        "[tenantResourceId('Microsoft.Management/managementGroups', 'bjm')]"
       ],
       "properties": {
+        "displayName": "bjm-Landing Zones",
         "details": {
           "parent": {
-            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'child-a')]"
+            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'bjm')]"
           }
-        },
-        "displayName": "Grandchild A-C"
+        }
       }
     },
     {
       "type": "Microsoft.Management/managementGroups",
       "apiVersion": "2020-05-01",
-      "name": "greatgrandchild-A-C-A",
+      "name": "bjm-online",
       "dependsOn": [
-        "[tenantResourceId('Microsoft.Management/managementGroups', 'grandchild-a-c')]"
+        "[tenantResourceId('Microsoft.Management/managementGroups', 'bjm-landingzones')]"
       ],
       "properties": {
+        "displayName": "bjm-online",
         "details": {
           "parent": {
-            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'grandchild-a-c')]"
+            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'bjm-landingzones')]"
           }
-        },
-        "displayName": "Greatgrandchild A-C-A"
-      }
-    },
-    {
-      "type": "Microsoft.Management/managementGroups",
-      "apiVersion": "2020-05-01",
-      "name": "grandchild-a-b",
-      "dependsOn": [
-        "[tenantResourceId('Microsoft.Management/managementGroups', 'child-a')]"
-      ],
-      "properties": {
-        "details": {
-          "parent": {
-            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'child-a')]"
-          }
-        },
-        "displayName": "Grandchild A-B"
-      }
-    },
-    {
-      "type": "Microsoft.Management/managementGroups",
-      "apiVersion": "2020-05-01",
-      "name": "grandchild-a-a",
-      "dependsOn": [
-        "[tenantResourceId('Microsoft.Management/managementGroups', 'child-a')]"
-      ],
-      "properties": {
-        "details": {
-          "parent": {
-            "id": "[tenantResourceId('Microsoft.Management/managementGroups', 'child-a')]"
-          }
-        },
-        "displayName": "Grandchild A-A"
+        }
       }
     }
   ]

@@ -1,4 +1,8 @@
 
+param(
+    [string] [Parameter(mandatory = $true)]$root
+)
+
 function Get-Children($id, $children, [array]$output){
 
     Write-Host "Handling: $id"
@@ -27,7 +31,7 @@ function Get-Children($id, $children, [array]$output){
     return $output
 }
 
-$mg = Get-AzManagementGroup -GroupName 'bmoore-mgmt-group' -Expand -Recurse
+$mg = Get-AzManagementGroup -GroupName $root -Expand -Recurse
 
 $output = @([ordered]@{})
 

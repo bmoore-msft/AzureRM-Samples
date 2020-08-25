@@ -5,49 +5,39 @@
     "groups": {
       "value": [
         {
-          "displayName": "BMoore's subscriptions",
+          "displayName": "bjm",
           "name": "bmoore-mgmt-group",
           "parentName": ""
         },
         {
-          "name": "child-b",
-          "displayName": "Child B",
-          "parentName": "bmoore-mgmt-group"
+          "name": "bjm-platform",
+          "displayName": "bjm-platform",
+          "parentName": "bjm"
         },
         {
-          "name": "grandchild-b-2",
-          "displayName": "Grandchild B-2",
-          "parentName": "child-b"
+          "name": "bjm-management",
+          "displayName": "bjm-management",
+          "parentName": "bjm-platform"
         },
         {
-          "name": "grandchild-b-1",
-          "displayName": "Grandchild B-1",
-          "parentName": "child-b"
+          "name": "bjm-decomissioned",
+          "displayName": "bjm-decomissioned",
+          "parentName": "bjm"
         },
         {
-          "name": "child-a",
-          "displayName": "Child A",
-          "parentName": "bmoore-mgmt-group"
+          "name": "bjm-sandboxes",
+          "displayName": "bjm-sandboxes",
+          "parentName": "bjm"
         },
         {
-          "name": "grandchild-a-c",
-          "displayName": "Grandchild A-C",
-          "parentName": "child-a"
+          "name": "bjm-landingzones",
+          "displayName": "bjm-Landing Zones",
+          "parentName": "bjm"
         },
         {
-          "name": "greatgrandchild-A-C-A",
-          "displayName": "Greatgrandchild A-C-A",
-          "parentName": "grandchild-a-c"
-        },
-        {
-          "name": "grandchild-a-b",
-          "displayName": "Grandchild A-B",
-          "parentName": "child-a"
-        },
-        {
-          "name": "grandchild-a-a",
-          "displayName": "Grandchild A-A",
-          "parentName": "child-a"
+          "name": "bjm-online",
+          "displayName": "bjm-online",
+          "parentName": "bjm-landingzones"
         }
       ]
     }

@@ -7,7 +7,8 @@
             "type": "array"
         },
         "scopesToDeploy": {
-            "type": "array"
+            "type": "array",
+            "defaultValue": [] //if none are provied deploy all scopes
         }
     },
     "resources": [
@@ -52,7 +53,7 @@
                     },
                     "resources": [
                         {
-                            "condition": "[contains(parameters('scopesToDeploy'), parameters('parentManagementGroup'))]",
+                            "condition": "[or(contains(parameters('scopesToDeploy'), parameters('parentManagementGroup')), empty(parameters('scopesToDeploy')))]",
                             "type": "Microsoft.Management/managementGroups/subscriptions",
                             "apiVersion": "2020-05-01",
                             "name": "[concat(parameters('parentManagementGroup'), '/', parameters('subscription'))]",
