@@ -1,0 +1,75 @@
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "policyDefinitions": {
+            "type": "array",
+            "defaultValue": [
+                "scratch"
+            ]
+        },
+        // arm doesn't support this well today - we need to union the scopes and that params from a file... since this can't be done on the deployments resource
+        // it would require three nested deployments, two for outputting the values to be unioned and then in a third referencing the outputs of those deployments
+        // in any case, if the number of policies is finite declaratively deploying all in parallel is likely the better choice since it deploys
+        // in less than a minute
+        "scopesToDeploy": {
+            "type": "array",
+            "defaultValue": [] //if none are provied deploy all scopes
+        },
+        "_artifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
+            },
+            "defaultValue": "[deployment().properties.templateLink.uri]"
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+            },
+            "defaultValue": ""
+        }
+    },
+    "resources": [
+        {
+            "name": "[concat('policyDef-', parameters('policyDefinitions')[copyIndex()])]",
+            "type": "Microsoft.Resources/deployments",
+            "location": "[deployment().location]",
+            "apiVersion": "2019-10-01",
+            "copy": {
+                "name": "subscriptionLoop",
+                "count": "[length(parameters('policyDefinitions'))]"
+            },
+            "properties": {
+                "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "parametersLink": {
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('policyDefinitions/', parameters('policyDefinitions')[copyIndex()], '.parameters.json', parameters('_artifactsLocationSasToken')))]"
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "policyDefinition": {
+                            "type": "object"
+                        }
+                    },
+                    "resources": [
+                        {
+                            //"condition": "[or(contains(parameters('scopesToDeploy'), parameters('parentManagementGroup')), empty(parameters('scopesToDeploy')))]",
+                            "scope": "[parameters('policyDefinition').scope]",
+                            "type": "Microsoft.Authorization/policyDefinitions",
+                            "apiVersion": "2019-09-01",
+                            "name": "[parameters('policyDefinition').name]",
+                            "properties": "[parameters('policyDefinition').properties]"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

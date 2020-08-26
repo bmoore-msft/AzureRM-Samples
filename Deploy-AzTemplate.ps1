@@ -66,6 +66,23 @@ $TemplateJSON = Get-Content $TemplateFile -Raw | ConvertFrom-Json
 
 $TemplateSchema = $TemplateJson | Select-Object -expand '$schema' -ErrorAction Ignore
 
+switch -Wildcard ($TemplateSchema){
+    '*tenantDeploymentTemplate.json*' {
+        $deploymentScope = "Tenant"
+    }
+    '*managementGroupDeploymentTemplate.json*' {
+        $deploymentScope = "ManagementGroup"
+    }
+    '*subscriptionDeploymentTemplate.json*' {
+        $deploymentScope = "Subscription"
+    }
+    '*/deploymentTemplate.json*' {
+        $deploymentScope = "ResourceGroup"
+        $OptionalParameters.Add('Mode', $Mode)
+    }
+}
+
+<#
 if ($TemplateSchema -like '*subscriptionDeploymentTemplate.json*') {
     $deploymentScope = "Subscription"
 }
@@ -73,6 +90,7 @@ else {
     $deploymentScope = "ResourceGroup"
     $OptionalParameters.Add('Mode', $Mode)
 }
+#>
 
 Write-Host "Running a $deploymentScope scoped deployment..."
 
@@ -179,7 +197,25 @@ if ($deploymentScope -eq "ResourceGroup") {
         New-AzResourceGroup -Name $ResourceGroupName -Location $Location -Verbose -Force -ErrorAction Stop
     }
 }
+
 if ($ValidateOnly) {
+    
+    switch($deploymentScope){
+        "resourceGroup" {
+            $ErrorMessages = Format-ValidationOutput (Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName @TemplateArgs @OptionalParameters)
+        }
+        "Subscription" {
+            $ErrorMessages = Format-ValidationOutput (Test-AzDeployment -Location $Location @TemplateArgs @OptionalParameters)
+        }
+        "managementGroup" {           
+            $ErrorMessages = Format-ValidationOutput (Test-AzManagementGroupDeployment -Location $Location @TemplateArgs @OptionalParameters)
+        }
+        "tenant" {
+            $ErrorMessages = Format-ValidationOutput (Test-AzTenantDeployment -Location $Location @TemplateArgs @OptionalParameters)
+        }
+    }
+
+    <#    
     if ($deploymentScope -eq "Subscription") {
         #subscription scoped deployment
         $ErrorMessages = Format-ValidationOutput (Test-AzDeployment -Location $Location @TemplateArgs @OptionalParameters)
@@ -187,7 +223,9 @@ if ($ValidateOnly) {
     else {
         #resourceGroup deployment 
         $ErrorMessages = Format-ValidationOutput (Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName @TemplateArgs @OptionalParameters)
-    }
+    }#>
+
+
     if ($ErrorMessages) {
         Write-Output '', 'Validation returned the following errors:', @($ErrorMessages), '', 'Template is invalid.'
     }
@@ -195,10 +233,48 @@ if ($ValidateOnly) {
         Write-Output '', 'Template is valid.'
     }
 }
+
 else {
 
     $ErrorActionPreference = 'Continue' # Switch to Continue" so multiple errors can be formatted and output
-    if ($deploymentScope -eq "Subscription") {
+    
+    switch($deploymentScope){
+        "resourceGroup" {
+            New-AzResourceGroupDeployment -Name $DeploymentName `
+            -ResourceGroupName $ResourceGroupName `
+            @TemplateArgs `
+            @OptionalParameters `
+            -Force -Verbose `
+            -ErrorVariable ErrorMessages
+        }
+        "Subscription" {
+            New-AzDeployment -Name $DeploymentName `
+            -Location $Location `
+            @TemplateArgs `
+            @OptionalParameters `
+            -Verbose `
+            -ErrorVariable ErrorMessages
+        }
+        "managementGroup" {           
+             New-AzManagementGroupDeployment -Name $DeploymentName `
+            -ManagementGroupId $managementGroupId 
+            -Location $Location `
+            @TemplateArgs `
+            @OptionalParameters `
+            -Verbose `
+            -ErrorVariable ErrorMessages
+        }
+        "tenant" {
+            New-AzTenantDeployment -Name $DeploymentName `
+            -Location $Location `
+            @TemplateArgs `
+            @OptionalParameters `
+            -Verbose `
+            -ErrorVariable ErrorMessages
+        }
+    }
+    
+    <#if ($deploymentScope -eq "Subscription") {
         #subscription scoped deployment
         New-AzDeployment -Name $DeploymentName `
             -Location $Location `
@@ -214,7 +290,8 @@ else {
             @OptionalParameters `
             -Force -Verbose `
             -ErrorVariable ErrorMessages
-    }
+    }#>
+
     $ErrorActionPreference = 'Stop' 
     if ($ErrorMessages) {
         Write-Output '', 'Template deployment returned the following errors:', '', @(@($ErrorMessages) | ForEach-Object { $_.Exception.Message })

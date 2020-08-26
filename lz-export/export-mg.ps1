@@ -67,7 +67,7 @@ foreach($item in $output){
 }
 
 # Create the param file for the managementGroup template that uses a copy loop
-$mgParamFile = @{
+$mgParamFile = [ordered]@{
     '$schema' = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#"
     contentVersion = "1.0.0.0"
     parameters = @{
@@ -78,7 +78,7 @@ $mgParamFile = @{
 }
 
 # Create the param file for the subscription template
-$subParamFile = @{
+$subParamFile = [ordered]@{
     '$schema' = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#"
     contentVersion = "1.0.0.0"
     parameters = @{
@@ -123,7 +123,7 @@ foreach($mg in $mgs){
 
 }
 
-$mgTemplate = @{
+$mgTemplate = [ordered]@{
     '$schema' =  "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#"
     contentVersion = "1.0.0.0"
     resources = $resources
