@@ -13,7 +13,7 @@
     },
     "resources": [
         {
-            "name": "[concat('sub-', parameters('subscriptions')[copyIndex()])]",
+            "name": "[concat('sub-', parameters('subscriptions')[copyIndex()].subscription)]",
             "type": "Microsoft.Resources/deployments",
             "location": "[deployment().location]",
             "apiVersion": "2019-10-01",
