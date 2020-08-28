@@ -3,11 +3,8 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "policyDefinitions": {
-            "type": "array",
-            "defaultValue": [
-                "scratch"
-            ]
+        "policySetDefinitions": {
+            "type": "array"
         },
         // arm doesn't support this well today - we need to union the scopes and that params from a file... since this can't be done on the deployments resource
         // it would require three nested deployments, two for outputting the values to be unioned and then in a third referencing the outputs of those deployments
@@ -34,13 +31,13 @@
     },
     "resources": [
         {
-            "name": "[concat('policyDef-', parameters('policyDefinitions')[copyIndex()])]",
+            "name": "[concat('policySet-', parameters('policySetDefinitions')[copyIndex()])]",
             "type": "Microsoft.Resources/deployments",
             "location": "[deployment().location]",
             "apiVersion": "2019-10-01",
             "copy": {
-                "name": "subscriptionLoop",
-                "count": "[length(parameters('policyDefinitions'))]"
+                "name": "policySetDefLoop",
+                "count": "[length(parameters('policySetDefinitions'))]"
             },
             "properties": {
                 "mode": "Incremental",
@@ -48,21 +45,22 @@
                     "scope": "inner"
                 },
                 "parametersLink": {
-                    "uri": "[uri(parameters('_artifactsLocation'), concat('policyDefinitions/', parameters('policyDefinitions')[copyIndex()], '.parameters.json', parameters('_artifactsLocationSasToken')))]"
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('policySetDefinitions/', parameters('policySetDefinitions')[copyIndex()], '.parameters.json', parameters('_artifactsLocationSasToken')))]"
                 },
                 "template": {
                     "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
                     "parameters": {
                         "policyDefinition": {
-                            "type": "object"
+                            "type": "object",
+                            "defaultValue": {} //disable VS Code false positive
                         }
                     },
                     "resources": [
                         {
                             //"condition": "[or(contains(parameters('scopesToDeploy'), parameters('parentManagementGroup')), empty(parameters('scopesToDeploy')))]",
                             "scope": "[parameters('policyDefinition').scope]",
-                            "type": "Microsoft.Authorization/policyDefinitions",
+                            "type": "Microsoft.Authorization/policySetDefinitions",
                             "apiVersion": "2019-09-01",
                             "name": "[parameters('policyDefinition').name]",
                             "properties": "[parameters('policyDefinition').properties]"

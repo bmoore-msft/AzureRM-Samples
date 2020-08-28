@@ -7,7 +7,7 @@ param(
 )
 
 # Only get Custom policyDefinitions
-$defs = Get-AzPolicyDefinition | Where-Object{$_.Properties.PolicyType -eq "custom"}
+$defs = Get-AzPolicySetDefinition | Where-Object{$_.Properties.PolicyType -eq "custom"}
 
 $policyList = @()
 
@@ -26,17 +26,17 @@ foreach($p in $defs){
 
     # remove metadata property - remove policyType so we can convert from enum to string (and then add it back)
     $md = $p.properties.metadata | Select-object -property * -ExcludeProperty createdBy, createdOn, updatedBy, updatedOn
-    $q = $p.properties | Select-object -property * -ExcludeProperty metadata, policytype 
+    $q = $p.properties | Select-object -property * -ExcludeProperty metadata, policytype, PolicyDefinitions.policyDefinitionReferenceId 
     $q | Add-member -MemberType NoteProperty -Name policyType -value "Custom"
     $q | Add-Member -MemberType NoteProperty -Name 'metadata' -Value $md
-    
+
     $json = @{
         scope = $scope
         name = $p.ResourceName
         properties = $q #$p.properties
     }
 
-    $filePath = ".\policyDefinitions\$($p.ResourceName).parameters.json"
+    $filePath = ".\policySetDefinitions\$($p.ResourceName).parameters.json"
     
     $ParamFile = [ordered]@{
         '$schema' = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#"
@@ -55,7 +55,7 @@ foreach($p in $defs){
 }
 
 # write the main template's parameter file to include the list of definitions
-$ParamFile = [ordered]@{
+$mainParamFile = [ordered]@{
     '$schema' = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#"
     contentVersion = "1.0.0.0"
     parameters = @{
@@ -65,4 +65,4 @@ $ParamFile = [ordered]@{
     }
 }
 
-$ParamFile | ConvertTo-Json -Depth 20 | Set-Content -path ".\policyDefinitions.parameters.json" 
+$mainParamFile | ConvertTo-Json -Depth 20 | Set-Content -path ".\policySetDefinitions.parameters.json" 

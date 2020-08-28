@@ -1,0 +1,109 @@
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "policyAssignments": {
+            "type": "array"
+        },
+        // arm doesn't support this well today - we need to union the scopes and that params from a file... since this can't be done on the deployments resource
+        // it would require three nested deployments, two for outputting the values to be unioned and then in a third referencing the outputs of those deployments
+        // in any case, if the number of policies is finite declaratively deploying all in parallel is likely the better choice since it deploys
+        // in less than a minute
+        "scopesToDeploy": {
+            "type": "array",
+            "defaultValue": [] //if none are provied deploy all scopes
+        },
+        "_artifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
+            },
+            "defaultValue": "[deployment().properties.templateLink.uri]"
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+            },
+            "defaultValue": ""
+        }
+    },
+    "resources": [
+        {
+            "name": "[concat('policy-', parameters('policyAssignments')[copyIndex()])]",
+            "type": "Microsoft.Resources/deployments",
+            "location": "[deployment().location]",
+            "apiVersion": "2019-10-01",
+            "copy": {
+                "name": "policyAssignmentLoop",
+                "count": "[length(parameters('policyAssignments'))]"
+            },
+            "properties": {
+                "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "parametersLink": {
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('policyAssignments/', parameters('policyAssignments')[copyIndex()], '.parameters.json', parameters('_artifactsLocationSasToken')))]"
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "policyAssignment": {
+                            "type": "object",
+                            "defaultValue": {} //disable VS Code false positive
+                        }
+                    },
+                    "variables": {
+                        // this variable and nested deployment below compensate for the ARM limitation in the "scope" policy
+                        "deployToMG": "[contains(parameters('policyAssignment').deploymentScope, 'Microsoft.Management/managementGroups')]"
+                    },
+                    "resources": [
+                        {
+                            "condition": "[variables('deployToMG')]",
+                            "scope": "[parameters('policyAssignment').deploymentScope]",
+                            "type": "Microsoft.Authorization/policyAssignments",
+                            "apiVersion": "2019-09-01",
+                            "name": "[parameters('policyAssignment').name]",
+                            "location": "[if(contains(parameters('policyAssignment'), 'location'), deployment().location, json('null'))]",
+                            "identity": "[if(contains(parameters('policyAssignment'), 'identity'), parameters('policyAssignment').identity, json('null'))]",
+                            "properties": "[parameters('policyAssignment').properties]"
+                        },
+                        {
+                            "condition": "[not(variables('deployToMG'))]",
+                            "type": "Microsoft.Resources/deployments",
+                            "apiVersion": "2019-10-01",
+                            "name": "[concat('deploy-', parameters('policyAssignment').name)]",
+                            "location": "[deployment().location]",
+                            "subscriptionId": "[replace(parameters('policyAssignment').deploymentScope, '/subscriptions/', '')]",
+                            "properties": {
+                                "expressionEvaluationOptions": {
+                                    "scope": "outer"
+                                },
+                                "mode": "Incremental",
+                                "template": {
+                                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                                    "contentVersion": "1.0.0.0",
+                                    "parameters": {},
+                                    "variables": {},
+                                    "resources": [
+                                        {
+                                            "type": "Microsoft.Authorization/policyAssignments",
+                                            "apiVersion": "2019-09-01",
+                                            "name": "[parameters('policyAssignment').name]",
+                                            "location": "[if(contains(parameters('policyAssignment'), 'location'), deployment().location, json('null'))]",
+                                            "identity": "[if(contains(parameters('policyAssignment'), 'identity'), parameters('policyAssignment').identity, json('null'))]",
+                                            "properties": "[parameters('policyAssignment').properties]"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

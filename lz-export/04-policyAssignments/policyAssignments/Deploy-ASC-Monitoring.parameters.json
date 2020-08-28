@@ -1,0 +1,25 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "policyAssignment": {
+      "value": {
+        "name": "Deploy-ASC-Monitoring",
+        "deploymentScope": "Microsoft.Management/managementGroups/bjm",
+        "identity": {
+          "type": "SystemAssigned"
+        },
+        "location": "eastus",
+        "properties": {
+          "Scope": "/providers/Microsoft.Management/managementGroups/bjm",
+          "NotScopes": null,
+          "DisplayName": "ASC-Monitoring",
+          "Description": "ASC-Monitoring",
+          "PolicyDefinitionId": "/providers/Microsoft.Authorization/policySetDefinitions/1f3afdf9-d0c9-4c3d-847f-89da613e70a8",
+          "Parameters": null,
+          "enforcementMode": "Default"
+        }
+      }
+    }
+  }
+}

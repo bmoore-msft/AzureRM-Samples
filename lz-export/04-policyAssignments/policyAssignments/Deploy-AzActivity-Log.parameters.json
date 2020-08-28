@@ -1,0 +1,29 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "policyAssignment": {
+      "value": {
+        "name": "Deploy-AzActivity-Log",
+        "deploymentScope": "Microsoft.Management/managementGroups/bjm",
+        "identity": {
+          "type": "SystemAssigned"
+        },
+        "location": "eastus",
+        "properties": {
+          "Scope": "/providers/Microsoft.Management/managementGroups/bjm",
+          "NotScopes": null,
+          "DisplayName": "Deploy-AzActivity-Log",
+          "Description": "Deploy-AzActivity-Log",
+          "PolicyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-ActivityLog",
+          "Parameters": {
+            "logAnalytics": {
+              "value": "/subscriptions/553b8572-7d61-4f37-a0b8-01eb4b95fdb6/resourcegroups/bjm-mgmt/providers/microsoft.operationalinsights/workspaces/bjm-la-553b8572-7d61-4f37-a0b8-01eb4b95fdb6"
+            }
+          },
+          "enforcementMode": "Default"
+        }
+      }
+    }
+  }
+}
