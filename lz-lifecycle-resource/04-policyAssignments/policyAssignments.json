@@ -1,0 +1,95 @@
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "policyAssignments": {
+            "type": "array"
+        },
+        "_artifactsLocation": {
+            "type": "string"
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring"
+        }
+    },
+    "resources": [
+        {
+            "name": "[concat('policy-', parameters('policyAssignments')[copyIndex()])]",
+            "type": "Microsoft.Resources/deployments",
+            "location": "[deployment().location]",
+            "apiVersion": "2019-10-01",
+            "copy": {
+                "name": "policyAssignmentLoop",
+                "count": "[length(parameters('policyAssignments'))]",
+                "mode": "Serial"
+            },
+            "properties": {
+                "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "parametersLink": {
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('04-policyAssignments/policyAssignments/', parameters('policyAssignments')[copyIndex()], '.parameters.json', parameters('_artifactsLocationSasToken')))]"
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "policyAssignment": {
+                            "type": "object",
+                            "defaultValue": {}
+                        }
+                    },
+                    "variables": {
+                        // this variable and nested deployment below compensate for the ARM limitation in the "scope" policy
+                        "deployToMG": "[contains(parameters('policyAssignment').deploymentScope, 'Microsoft.Management/managementGroups')]"
+                    },
+                    "resources": [
+                        {
+                            "condition": "[variables('deployToMG')]", // MG level deployments can be done with the scope property
+                            "scope": "[parameters('policyAssignment').deploymentScope]",
+                            "type": "Microsoft.Authorization/policyAssignments",
+                            "apiVersion": "2019-09-01",
+                            "name": "[parameters('policyAssignment').name]",
+                            "location": "[if(contains(parameters('policyAssignment'), 'location'), deployment().location, json('null'))]",
+                            "identity": "[if(contains(parameters('policyAssignment'), 'identity'), parameters('policyAssignment').identity, json('null'))]",
+                            "properties": "[parameters('policyAssignment').properties]"
+                        },
+                        {   
+                            // this only works when deployed back to the same tenant it was originally deployed to - unless scopes are replaced
+                            "condition": false, //"[not(variables('deployToMG'))]", // sub-level deployments cannot be done with the scope property so we have to nest
+                            "type": "Microsoft.Resources/deployments",
+                            "apiVersion": "2019-10-01",
+                            "name": "[concat('deploy-', parameters('policyAssignment').name)]",
+                            "location": "[deployment().location]",
+                            "subscriptionId": "[replace(parameters('policyAssignment').deploymentScope, '/subscriptions/', '')]",
+                            "properties": {
+                                "expressionEvaluationOptions": {
+                                    "scope": "outer"
+                                },
+                                "mode": "Incremental",
+                                "template": {
+                                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                                    "contentVersion": "1.0.0.0",
+                                    "parameters": {},
+                                    "variables": {},
+                                    "resources": [
+                                        {
+                                            "type": "Microsoft.Authorization/policyAssignments",
+                                            "apiVersion": "2019-09-01",
+                                            "name": "[parameters('policyAssignment').name]",
+                                            "location": "[if(contains(parameters('policyAssignment'), 'location'), deployment().location, json('null'))]",
+                                            "identity": "[if(contains(parameters('policyAssignment'), 'identity'), parameters('policyAssignment').identity, json('null'))]",
+                                            "properties": "[parameters('policyAssignment').properties]"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

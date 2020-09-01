@@ -1,0 +1,23 @@
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subscriptions": {
+            "type": "array"
+        }
+    },
+    "resources": [
+
+        {
+            "type": "Microsoft.Management/managementGroups/subscriptions",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(replace(parameters('subscriptions')[copyIndex()].parentId, 'Microsoft.Management/managementGroups/', ''), '/', parameters('subscriptions')[copyIndex()].subscriptionId)]",
+            "copy": {
+                "count": "[length(parameters('subscriptions'))]",
+                "name": "mg-sub-loop"
+            },
+            "properties": {}
+        }
+    ]
+}

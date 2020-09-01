@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "policyDefinition": {
+      "value": {
+        "scope": "Microsoft.Management/managementGroups/bjm",
+        "properties": {
+          "Description": "This policy restrict creation of Sql servers with exposed public endpoints",
+          "DisplayName": "Deny-PublicEndpoint-Sql",
+          "Mode": "All",
+          "Parameters": null,
+          "PolicyRule": {
+            "if": {
+              "allOf": [
+                {
+                  "field": "type",
+                  "equals": "Microsoft.Sql/servers"
+                },
+                {
+                  "field": "Microsoft.Sql/servers/publicNetworkAccess",
+                  "notequals": "Disabled"
+                }
+              ]
+            },
+            "then": {
+              "effect": "Deny"
+            }
+          },
+          "policyType": "Custom",
+          "metadata": {}
+        },
+        "name": "Deny-PublicEndpoint-Sql"
+      }
+    }
+  }
+}

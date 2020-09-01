@@ -1,0 +1,17 @@
+{
+  "policyAssignments": {
+    "value": [
+      "Deny-Subnet-Without-Nsg",
+      "Deploy-SQL-DB-Auditing",
+      "Deploy-VM-Backup",
+      "Enforce-SQL-Encryption",
+      "Deploy-Log-Analytics",
+      "Deploy-ASC-Monitoring",
+      "Deploy-ASC-Security",
+      "Deploy-AzActivity-Log",
+      "Deploy-Resource-Diag",
+      "Deploy-VM-Monitoring",
+      "DataProtectionSecurityCenter"
+    ]
+  }
+}

@@ -1,0 +1,57 @@
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "policyDefinitions": {
+            "type": "array"
+        },
+        "_artifactsLocation": {
+            "type": "string"
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring"
+        }
+    },
+    "resources": [
+        {
+            "name": "[concat('policyDef-', parameters('policyDefinitions')[copyIndex()])]",
+            "type": "Microsoft.Resources/deployments",
+            "location": "[deployment().location]",
+            "apiVersion": "2019-10-01",
+            "copy": {
+                "name": "policyDefLoop",
+                "count": "[length(parameters('policyDefinitions'))]",
+                "mode": "Serial"
+            },
+            "properties": {
+                "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "parametersLink": {
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('03-PolicyDefinitions/policyDefinitions/', parameters('policyDefinitions')[copyIndex()], '.parameters.json', parameters('_artifactsLocationSasToken')))]"
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "policyDefinition": {
+                            "type": "object",
+                            "defaultValue": {} // validation bug
+                        }
+                    },
+                    "resources": [
+                        {
+                            "scope": "[parameters('policyDefinition').scope]",
+                            "type": "Microsoft.Authorization/policyDefinitions",
+                            "apiVersion": "2019-09-01",
+                            "name": "[parameters('policyDefinition').name]",
+                            "properties": "[parameters('policyDefinition').properties]"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

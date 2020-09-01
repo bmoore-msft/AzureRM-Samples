@@ -1,0 +1,25 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "policyAssignment": {
+      "value": {
+        "name": "Deploy-SQL-DB-Auditing",
+        "deploymentScope": "Microsoft.Management/managementGroups/bjm-landingzones",
+        "identity": {
+          "type": "SystemAssigned"
+        },
+        "location": "eastus",
+        "properties": {
+          "Scope": "/providers/Microsoft.Management/managementGroups/bjm-landingzones",
+          "NotScopes": null,
+          "DisplayName": "Deploy-SQL-Audit",
+          "Description": "Deploy-SQL-Audit",
+          "PolicyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/a6fb4358-5bf4-4ad7-ba82-2cd2f41ce5e9",
+          "Parameters": null,
+          "enforcementMode": "Default"
+        }
+      }
+    }
+  }
+}

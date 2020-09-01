@@ -1,0 +1,47 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "groups": {
+      "value": {
+        "items": [
+          {
+            "managementGroupId": "Microsoft.Management/managementGroups/bjm",
+            "displayName": "Prod",
+            "parentId": ""
+          },
+          {
+            "managementGroupId": "Microsoft.Management/managementGroups/bjm-platform",
+            "displayName": "platform",
+            "parentId": "Microsoft.Management/managementGroups/bjm"
+          },
+          {
+            "managementGroupId": "Microsoft.Management/managementGroups/bjm-management",
+            "displayName": "management",
+            "parentId": "Microsoft.Management/managementGroups/bjm-platform"
+          },
+          {
+            "managementGroupId": "Microsoft.Management/managementGroups/bjm-decomissioned",
+            "displayName": "decomissioned",
+            "parentId": "Microsoft.Management/managementGroups/bjm"
+          },
+          {
+            "managementGroupId": "Microsoft.Management/managementGroups/bjm-sandboxes",
+            "displayName": "sandboxes",
+            "parentId": "Microsoft.Management/managementGroups/bjm"
+          },
+          {
+            "managementGroupId": "Microsoft.Management/managementGroups/bjm-landingzones",
+            "displayName": "landing-zones",
+            "parentId": "Microsoft.Management/managementGroups/bjm"
+          },
+          {
+            "managementGroupId": "Microsoft.Management/managementGroups/bjm-online",
+            "displayName": "online",
+            "parentId": "Microsoft.Management/managementGroups/bjm-landingzones"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "policyDefinition": {
+      "value": {
+        "scope": "Microsoft.Management/managementGroups/bjm",
+        "properties": {
+          "Description": null,
+          "DisplayName": "Deny-Subnets-Without-NSG",
+          "Mode": "All",
+          "Parameters": {},
+          "PolicyRule": {
+            "if": {
+              "allOf": [
+                {
+                  "field": "type",
+                  "equals": "Microsoft.Network/virtualNetworks/subnets"
+                },
+                {
+                  "field": "Microsoft.Network/virtualNetworks/subnets/networkSecurityGroup.id",
+                  "exists": "false"
+                }
+              ]
+            },
+            "then": {
+              "effect": "deny"
+            }
+          },
+          "policyType": "Custom",
+          "metadata": {}
+        },
+        "name": "Deny-Subnet-Without-Nsg"
+      }
+    }
+  }
+}

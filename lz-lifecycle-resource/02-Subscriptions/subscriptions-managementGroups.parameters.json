@@ -1,0 +1,18 @@
+{
+  "subscriptions": {
+    "value": {
+      "items": [
+        {
+          "subscriptionId": "553b8572-7d61-4f37-a0b8-01eb4b95fdb6",
+          "displayName": "Management",
+          "parentId": "Microsoft.Management/managementGroups/bjm-management"
+        },
+        {
+          "subscriptionId": "561c147a-8acc-4984-8878-7c13f228917e",
+          "displayName": "LZ WVD",
+          "parentId": "Microsoft.Management/managementGroups/bjm-online"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "inputString":{
+            "type": "object"
+        }
+    },
+    /*
+        After exporting the environment, the scope values for all resources within the managementGrpoup hierarchy are set to the original exported values.
+        These values can be used to redeploy the exact same resources within the same tenant or a new tenant.  In order to deploy a new set of resources 
+        within the same tenant, a new hierarchy (i.e. set of managementGroups) must be created and the names of the managementGroups must be changed.
+
+        When deployed, this file will replace all of the old scopes with new scope values based on the values provided below.  This allows for another level
+        of "parameterization" in the files without having to edit each file manually.
+    
+        Currently this mapping only includes managementGroups.  Subscriptions may be added but the best practice for a reference architecture dictates
+        assignments on managementGroups only.
+    */
+    "variables": {
+        // map all old scopes to a new scope
+        "destinationScopes": {
+         "Microsoft.Management/managementGroups/bjm":"Microsoft.Management/managementGroups/bmoore",
+         "Microsoft.Management/managementGroups/bjm-platform":"Microsoft.Management/managementGroups/bmoore-platform",
+         "Microsoft.Management/managementGroups/bjm-management":"Microsoft.Management/managementGroups/bmoore-management",
+         "Microsoft.Management/managementGroups/bjm-decomissioned":"Microsoft.Management/managementGroups/bmoore-decomissioned",
+         "Microsoft.Management/managementGroups/bjm-sandboxes":"Microsoft.Management/managementGroups/bmoore-sandboxes",
+         "Microsoft.Management/managementGroups/bjm-landingzones":"Microsoft.Management/managementGroups/bmoore-landingzones",
+         "Microsoft.Management/managementGroups/bjm-online":"Microsoft.Management/managementGroups/bmoore-online"
+        },
+        // replace strings in sequence the the changes are made cumulatively
+        "00": "[string(parameters('inputString'))]",
+        "01": "[replace(variables('00'), 'Microsoft.Management/managementGroups/bjm', variables('destinationScopes')['Microsoft.Management/managementGroups/bjm'])]",
+        "02": "[replace(variables('01'), 'Microsoft.Management/managementGroups/bjm-platform', variables('destinationScopes')['Microsoft.Management/managementGroups/bjm-platform'])]",
+        "03": "[replace(variables('02'), 'Microsoft.Management/managementGroups/bjm-management', variables('destinationScopes')['Microsoft.Management/managementGroups/bjm-management'])]",
+        "04": "[replace(variables('03'), 'Microsoft.Management/managementGroups/bjm-decomissioned', variables('destinationScopes')['Microsoft.Management/managementGroups/bjm-decomissioned'])]",
+        "05": "[replace(variables('04'), 'Microsoft.Management/managementGroups/bjm-sandboxes', variables('destinationScopes')['Microsoft.Management/managementGroups/bjm-sandboxes'])]",
+        "06": "[replace(variables('05'), 'Microsoft.Management/managementGroups/bjm-landingzones', variables('destinationScopes')['Microsoft.Management/managementGroups/bjm-landingzones'])]",
+        "07": "[replace(variables('06'), 'Microsoft.Management/managementGroups/bjm-online', variables('destinationScopes')['Microsoft.Management/managementGroups/bjm-online'])]"
+    },
+    "resources": [],
+    "outputs": {
+        "outputString": {
+            "type": "object",
+            "value": "[json(variables('07'))]"  // be sure to output the last variable in the sequence
+        }
+    }
+}

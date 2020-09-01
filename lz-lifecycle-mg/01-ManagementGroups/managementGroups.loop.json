@@ -1,0 +1,103 @@
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "groups": {
+            "type": "object"
+        },
+        "_artifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
+            }
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+            }
+        }
+    },
+    "resources": [
+        // this deployment will update the managementGroup names in the parameters being used for this deployment
+        {
+            "name": "replace-scopes",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "location": "[deployment().location]",
+            "properties": {
+                "mode": "Incremental",
+                "parameters": {
+                    "inputString": {
+                        "value": "[parameters('groups')]"
+                    }
+                },
+                "templateLink": {
+                    "contentVersion": "1.0.0.0",
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('replace-scopes.json', parameters('_artifactsLocationSasToken')))]"
+                }
+            }
+        },
+        // this is a serial loop that requires dependency ordering via the parameters file
+        // the parent group of any MG must be deployed first
+        {
+            "name": "deploy-management-groups",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "location": "[deployment().location]",
+            "dependsOn": [
+                "replace-scopes"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "groups": {
+                        "value": "[reference('replace-scopes').outputs.outputString.value['items']]" // use the replaced / remapped managementGroupNames
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "groups": {
+                            "type": "array"
+                        }
+                    },
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Management/managementGroups",
+                            "apiVersion": "2020-05-01",
+                            "name": "[split(parameters('groups')[copyIndex()].managementGroupId, '/')[2]]",
+                            "copy": {
+                                "count": "[length(parameters('groups'))]",
+                                "name": "managementGroup-loop",
+                                "mode": "serial"
+                            },
+                            "properties": {
+                                "displayName": "[parameters('groups')[copyIndex()].displayName]",
+                                "details": {
+                                    "parent": {
+                                        "id": "[if(not(empty(parameters('groups')[copyIndex()].parentId)), 
+                                                   tenantResourceId('Microsoft.Management/managementGroups', split(parameters('groups')[copyIndex()].parentId, '/')[2]), 
+                                                   json('null'))]"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "out": {
+            "type": "array",
+            "value": "[reference('replace-scopes').outputs.outputString.value['items']]"
+        }
+    }
+}

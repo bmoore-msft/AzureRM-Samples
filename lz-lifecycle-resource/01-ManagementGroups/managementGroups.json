@@ -1,0 +1,34 @@
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "groups": {
+            "type": "array"
+        }
+    },
+    "resources": [
+        // this is a serial loop that requires dependency ordering via the parameters file
+        // the parent group of a MG must be deployed first and ordered accordingly in the parameter file array
+        {
+            "type": "Microsoft.Management/managementGroups",
+            "apiVersion": "2020-05-01",
+            "name": "[split(parameters('groups')[copyIndex()].managementGroupId, '/')[2]]",
+            "copy": {
+                "count": "[length(parameters('groups'))]",
+                "name": "managementGroup-loop",
+                "mode": "serial"
+            },
+            "properties": {
+                "displayName": "[parameters('groups')[copyIndex()].displayName]",
+                "details": {
+                    "parent": {
+                        "id": "[if(not(empty(parameters('groups')[copyIndex()].parentId)), 
+                                                   tenantResourceId('Microsoft.Management/managementGroups', split(parameters('groups')[copyIndex()].parentId, '/')[2]), 
+                                                   json('null'))]"
+                    }
+                }
+            }
+        }
+    ]
+}

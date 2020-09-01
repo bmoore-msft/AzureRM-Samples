@@ -1,0 +1,172 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "groups": {
+            "type": "object"
+        },
+        "subscriptions": {
+            "type": "object"
+        },
+        "policyDefinitions": {
+            "type": "array"
+        },
+        "policySetDefinitions": {
+            "type": "array"
+        },
+        "policyAssignments": {
+            "type": "array"
+        },
+        "_artifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
+            },
+            "defaultValue": "[deployment().properties.templateLink.uri]"
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+            },
+            "defaultValue": ""
+        },
+        "switch": {
+            "type": "object",
+            "defaultValue": {
+                "managementGroups": true,
+                "subscriptions": true,
+                "policyDefinitions": true,
+                "policySetDefinitions": true,
+                "policyAssignments": true
+            }
+        }
+    },
+    "resources": [
+        {
+            "condition": "[parameters('switch').managementGroups]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "managementGroupDeployment",
+            "location": "[deployment().location]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "contentVersion": "1.0.0.0",
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('01-ManagementGroups/managementGroups.json', parameters('_artifactsLocationSasToken')))]"
+                },
+                "parameters": {
+                    "groups": {
+                        "value": "[parameters('groups')['items']]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[parameters('switch').subscriptions]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "subscriptionManagementGroupDeployment",
+            "location": "[deployment().location]",
+            "dependsOn": [
+                "policySetDefintionDeployment"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "contentVersion": "1.0.0.0",
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('02-Subscriptions/subscriptions-managementGroups.json', parameters('_artifactsLocationSasToken')))]"
+                },
+                "parameters": {
+                    "subscriptions": {
+                        "value": "[parameters('subscriptions')['items']]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[parameters('switch').policyDefinitions]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "policyDefinitionDeployment",
+            "location": "[deployment().location]",
+            "dependsOn": [
+                "managementGroupDeployment"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "contentVersion": "1.0.0.0",
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('03-PolicyDefinitions/policyDefinitions.json', parameters('_artifactsLocationSasToken')))]"
+                },
+                "parameters": {
+                    "policyDefinitions": {
+                        "value": "[parameters('policyDefinitions')]"
+                    },
+                    "_artifactsLocation": {
+                        "value": "[parameters('_artifactsLocation')]"
+                    },
+                    "_artifactsLocationSasToken": {
+                        "value": "[parameters('_artifactsLocationSasToken')]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[parameters('switch').policySetDefinitions]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "policySetDefintionDeployment",
+            "location": "[deployment().location]",
+            "dependsOn": [
+                "policyDefinitionDeployment"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "contentVersion": "1.0.0.0",
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('03-PolicyDefinitions/policySetDefintions.json', parameters('_artifactsLocationSasToken')))]"
+                },
+                "parameters": {
+                    "policySetDefinitions": {
+                        "value": "[parameters('policySetDefinitions')]"
+                    },
+                    "_artifactsLocation": {
+                        "value": "[parameters('_artifactsLocation')]"
+                    },
+                    "_artifactsLocationSasToken": {
+                        "value": "[parameters('_artifactsLocationSasToken')]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[parameters('switch').policyAssignments]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "policyAssignmentDeployment",
+            "location": "[deployment().location]",
+            "dependsOn": [
+                "policySetDefintionDeployment"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "contentVersion": "1.0.0.0",
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('04-policyAssignments/policyAssignments.json', parameters('_artifactsLocationSasToken')))]"
+                },
+                "parameters": {
+                    "policyAssignments": {
+                        "value": "[parameters('policyAssignments')]"
+                    },
+                    "_artifactsLocation": {
+                        "value": "[parameters('_artifactsLocation')]"
+                    },
+                    "_artifactsLocationSasToken": {
+                        "value": "[parameters('_artifactsLocationSasToken')]"
+                    }
+                }
+            }
+        }
+    ]
+}

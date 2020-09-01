@@ -1,0 +1,9 @@
+{
+  "policySetDefinitions": {
+    "value": [
+      "Deny-PublicEndpoints",
+      "Deploy-Diag-LogAnalytics",
+      "Deploy-Sql-Security"
+    ]
+  }
+}
