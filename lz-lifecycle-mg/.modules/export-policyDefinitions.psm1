@@ -1,21 +1,19 @@
-<#
-Export all policyDefinitions under the specified mg
-#>
+function Get-PolicyDefinitionObject {
+
+    <#
+    .Synopsis
+        Retrieve the hashtable (must then ConvertTo-JSON) need for the parameter file for the given policy definition.
+    .Description
+    .Notes
+    #>
 
 param(
-    [string] [Parameter(mandatory = $true)]$root
+    [Parameter(mandatory = $true)]$policyDefinition
 )
 
-# Only get Custom policyDefinitions
-$defs = Get-AzPolicyDefinition | Where-Object{$_.Properties.PolicyType -eq "custom"}
+    $p = $policyDefinition
 
-$policyList = @()
-
-foreach($p in $defs){
-    
-    Write-Host "Exporting: $($p.ResourceName)"
-
-    $json = @{}
+    Write-Host "Exporting Policy Def: $($p.ResourceName)"
 
     # if this is a subscription level definition, the resourceId has a different format (subsriptionId property is also not $null)
     if($p.ResourceId -like '/subscriptions/*'){
@@ -31,14 +29,11 @@ foreach($p in $defs){
     if((get-member -MemberType NoteProperty -InputObject $md) -ne $null){
         $q | Add-Member -MemberType NoteProperty -Name 'metadata' -Value $md
     }
-    
-    $json = @{
-        scope = $scope
+
+    $json = [ordered]@{
         name = $p.ResourceName
         properties = $q #$p.properties
     }
-
-    $filePath = "$PSScriptRoot\policyDefinitions\$($p.ResourceName).parameters.json"
     
     $ParamFile = [ordered]@{
         '$schema' = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#"
@@ -50,21 +45,6 @@ foreach($p in $defs){
         }
     }
 
-    $ParamFile | ConvertTo-Json -Depth 50 | Set-Content -path $filePath 
-
-    $policyList += $p.ResourceName
+return $ParamFile
 
 }
-
-# write the main template's parameter file to include the list of definitions
-$ParamFile = [ordered]@{
-    '$schema' = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#"
-    contentVersion = "1.0.0.0"
-    parameters = @{
-        policyDefinitions = @{
-            value = $policyList
-        }
-    }
-}
-
-$ParamFile.Parameters | ConvertTo-Json -Depth 20 | Set-Content -path "$PSScriptRoot\policyDefinitions.parameters.json" 

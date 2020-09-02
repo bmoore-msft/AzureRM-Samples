@@ -4,7 +4,7 @@
   "parameters": {
     "policySetDefinition": {
       "value": {
-        "scope": "Microsoft.Management/managementGroups/bjm",
+        "name": "Deploy-Sql-Security",
         "properties": {
           "Description": "Recommended built-in security policies for the North Star architecture",
           "DisplayName": "Deploy-Sql-Security",
@@ -25,24 +25,20 @@
             }
           },
           "PolicyDefinitionGroups": null,
-          "PolicyDefinitions": [
+          "policyDefinitions": [
             {
-              "policyDefinitionReferenceId": "Deploy-Sql-Tde",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Sql-Tde",
               "parameters": {}
             },
             {
-              "policyDefinitionReferenceId": "Deploy-Sql-SecurityAlertPolicies",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Sql-SecurityAlertPolicies",
               "parameters": {}
             },
             {
-              "policyDefinitionReferenceId": "Deploy-Sql-AuditingSettings",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Sql-AuditingSettings",
               "parameters": {}
             },
             {
-              "policyDefinitionReferenceId": "Deploy-Sql-vulnerabilityAssessments",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Sql-vulnerabilityAssessments",
               "parameters": {
                 "vulnerabilityAssessmentsEmail": {
@@ -54,10 +50,8 @@
               }
             }
           ],
-          "policyType": "Custom",
-          "metadata": {}
-        },
-        "name": "Deploy-Sql-Security"
+          "policyType": "Custom"
+        }
       }
     }
   }

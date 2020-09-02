@@ -7,6 +7,8 @@
         }
     },
     /*
+        This file is not currently used
+        
         After exporting the environment, the scope values for all resources within the managementGrpoup hierarchy are set to the original exported values.
         These values can be used to redeploy the exact same resources within the same tenant or a new tenant.  In order to deploy a new set of resources 
         within the same tenant, a new hierarchy (i.e. set of managementGroups) must be created and the names of the managementGroups must be changed.

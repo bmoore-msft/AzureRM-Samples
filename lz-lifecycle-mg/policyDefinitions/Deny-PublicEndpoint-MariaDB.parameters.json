@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "policyDefinition": {
+      "value": {
+        "name": "Deny-PublicEndpoint-MariaDB",
+        "properties": {
+          "Description": "This policy restrict creation of Maria DB accounts with exposed public endpoints",
+          "DisplayName": "Deny-PublicEndpoint-MariaDB",
+          "Mode": "All",
+          "Parameters": null,
+          "PolicyRule": {
+            "if": {
+              "allOf": [
+                {
+                  "field": "type",
+                  "equals": "Microsoft.DBforMariaDB/servers"
+                },
+                {
+                  "field": "Microsoft.DBforMariaDB/servers/publicNetworkAccess",
+                  "notequals": "Disabled"
+                }
+              ]
+            },
+            "then": {
+              "effect": "Deny"
+            }
+          },
+          "policyType": "Custom"
+        }
+      }
+    }
+  }
+}

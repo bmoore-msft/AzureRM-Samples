@@ -3,18 +3,6 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "groups": {
-            "type": "object"
-        },
-        "subscriptions": {
-            "type": "object"
-        },
-        "policyDefinitions": {
-            "type": "array"
-        },
-        "policySetDefinitions": {
-            "type": "array"
-        },
-        "policyAssignments": {
             "type": "array"
         },
         "_artifactsLocation": {
@@ -32,137 +20,92 @@
             "defaultValue": ""
         }
     },
-    "functions": [],
-    "variables": {},
     "resources": [
         {
-            "condition": false,
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-10-01",
-            "name": "managementGroupDeployment",
+            "name": "[concat('parametersDeployment', copyIndex())]",
             "location": "[deployment().location]",
+            "copy": {
+                "name": "parametersDeploymentLoop",
+                "count": "[length(parameters('groups'))]",
+                "mode": "Serial"
+            },
             "properties": {
                 "mode": "Incremental",
-                "templateLink": {
-                    "contentVersion": "1.0.0.0",
-                    "uri": "[uri(parameters('_artifactsLocation'), concat('01-ManagementGroups/managementGroups.loop.json', parameters('_artifactsLocationSasToken')))]"
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
                 },
-                //not needed if we use the single file approach
-                "parameters": {
-                    "groups": {
-                        "value": "[parameters('groups')]"
+                "parametersLink": {
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('managementGroups/', parameters('groups')[copyIndex()], '.parameters.json', parameters('_artifactsLocationSasToken')))]"
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "managementGroup": {
+                            "type": "object"
+                        },
+                        "subscriptions": {
+                            "type": "array"
+                        },
+                        "policyDefinitions": {
+                            "type": "array"
+                        },
+                        "policySetDefinitions": {
+                            "type": "array"
+                        },
+                        "policyAssignments": {
+                            "type": "array"
+                        }
                     },
-                    "_artifactsLocation": {
-                        "value": "[parameters('_artifactsLocation')]"
-                    },
-                    "_artifactsLocationSasToken": {
-                        "value": "[parameters('_artifactsLocationSasToken')]"
+                    "resources": [],
+                    "outputs": {
+                        "parametersFromFile": {
+                            "type": "object",
+                            "value": {
+                                "managementGroup": "[parameters('managementGroup')]",
+                                "subscriptions": "[parameters('subscriptions')]",
+                                "policyDefinitions": "[parameters('policyDefinitions')]",
+                                "policySetDefinitions": "[parameters('policySetDefinitions')]",
+                                "policyAssignments": "[parameters('policyAssignments')]"
+                            }
+                        }
                     }
                 }
             }
         },
         {
-            "condition": true,
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-10-01",
-            "name": "subscriptionManagementGroupDeployment",
+            "name": "[concat('managementGroupDeployment', copyIndex())]",
             "location": "[deployment().location]",
-            "dependsOn": [
-                "managementGroupDeployment"
-            ],
+            "copy": {
+                "name": "managementGroupLoop",
+                "count": "[length(parameters('groups'))]",
+                "mode": "Serial"
+            },
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
                     "contentVersion": "1.0.0.0",
-                    "uri": "[uri(parameters('_artifactsLocation'), concat('02-Subscriptions/subscriptions-managementGroups.loop.json', parameters('_artifactsLocationSasToken')))]"
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('managementGroupDeploy.json', parameters('_artifactsLocationSasToken')))]"
                 },
                 "parameters": {
+                    "managementGroup": {
+                        "value": "[reference(resourceId('Microsoft.Resources/deployments', concat('parametersDeployment', copyIndex()))).outputs.parametersFromFile.value['managementGroup']]"
+                    },
                     "subscriptions": {
-                        "value": "[parameters('subscriptions')]"
+                        "value": "[reference(resourceId('Microsoft.Resources/deployments', concat('parametersDeployment', copyIndex()))).outputs.parametersFromFile.value['subscriptions']]"
                     },
-                    "_artifactsLocation": {
-                        "value": "[parameters('_artifactsLocation')]"
-                    },
-                    "_artifactsLocationSasToken": {
-                        "value": "[parameters('_artifactsLocationSasToken')]"
-                    }
-                }
-            }
-        },
-        /*        {
-            "condition": false,
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
-            "name": "policyDefinitionDeployment",
-            "location": "[deployment().location]",
-            "dependsOn": [
-                "subscriptionManagementGroupDeployment"
-            ],
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "contentVersion": "1.0.0.0",
-                    "uri": "[uri(parameters('_artifactsLocation'), concat('03-PolicyDefinitions/policyDefinitions.json', parameters('_artifactsLocationSasToken')))]"
-                },
-                "parameters": {
                     "policyDefinitions": {
-                        "value": "[parameters('policyDefinitions')]"
+                        "value": "[reference(resourceId('Microsoft.Resources/deployments', concat('parametersDeployment', copyIndex()))).outputs.parametersFromFile.value['policyDefinitions']]"
                     },
-                    "_artifactsLocation": {
-                        "value": "[parameters('_artifactsLocation')]"
-                    },
-                    "_artifactsLocationSasToken": {
-                        "value": "[parameters('_artifactsLocationSasToken')]"
-                    }
-                }
-            }
-        },
-        {
-            "condition": false,
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
-            "name": "policySetDefintionDeployment",
-            "location": "[deployment().location]",
-            "dependsOn": [
-                "policyDefinitionDeployment"
-            ],
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "contentVersion": "1.0.0.0",
-                    "uri": "[uri(parameters('_artifactsLocation'), concat('03-PolicyDefinitions/policySetDefintions.json', parameters('_artifactsLocationSasToken')))]"
-                },
-                "parameters": {
                     "policySetDefinitions": {
-                        "value": "[parameters('policySetDefinitions')]"
+                        "value": "[reference(resourceId('Microsoft.Resources/deployments', concat('parametersDeployment', copyIndex()))).outputs.parametersFromFile.value['policySetDefinitions']]"
                     },
-                    "_artifactsLocation": {
-                        "value": "[parameters('_artifactsLocation')]"
-                    },
-                    "_artifactsLocationSasToken": {
-                        "value": "[parameters('_artifactsLocationSasToken')]"
-                    }
-                }
-            }
-        },
-        {
-            "condition": false,
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
-            "name": "policyAssignmentDeployment",
-            "location": "[deployment().location]",
-            "dependsOn": [
-                "policySetDefintionDeployment"
-            ],
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "contentVersion": "1.0.0.0",
-                    "uri": "[uri(parameters('_artifactsLocation'), concat('04-policyAssignments/policyAssignments.json', parameters('_artifactsLocationSasToken')))]"
-                },
-                "parameters": {
                     "policyAssignments": {
-                        "value": "[parameters('policyAssignments')]"
+                        "value": "[reference(resourceId('Microsoft.Resources/deployments', concat('parametersDeployment', copyIndex()))).outputs.parametersFromFile.value['policyAssignments']]"
                     },
                     "_artifactsLocation": {
                         "value": "[parameters('_artifactsLocation')]"
@@ -173,6 +116,15 @@
                 }
             }
         }
-*/
-    ]
+    ],
+    "outputs": {
+        "dump": {
+            "type": "array",
+            "copy": {
+                "count": "[length(parameters('groups'))]",
+                "input": "[reference(resourceId('Microsoft.Resources/deployments', concat('parametersDeployment', copyIndex()))).outputs.parametersFromFile.value['managementGroup']]" //"[reference(concat('managementGroupDeployment', copyIndex())).outputs.parametersFromFile.value]"
+
+            }
+        }
+    }
 }
