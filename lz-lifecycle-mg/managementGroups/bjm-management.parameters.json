@@ -1,0 +1,29 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "managementGroup": {
+      "value": {
+        "parentName": "bjm-platform",
+        "name": "bjm-management",
+        "displayName": "management"
+      }
+    },
+    "subscriptions": {
+      "value": [
+        "0cec7090-2e08-4498-9337-eb96ade50821"
+      ]
+    },
+    "policyDefinitions": {
+      "value": []
+    },
+    "policySetDefinitions": {
+      "value": []
+    },
+    "policyAssignments": {
+      "value": [
+        "Deploy-Log-Analytics"
+      ]
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "policyDefinition": {
+      "value": {
+        "name": "Deny-PublicIP",
+        "properties": {
+          "Description": "Denies creation of Public IPs under the assigned scope.",
+          "DisplayName": "Deny-PublicIP",
+          "Mode": "All",
+          "Parameters": {},
+          "PolicyRule": {
+            "if": {
+              "field": "type",
+              "equals": "Microsoft.Network/publicIPAddresses"
+            },
+            "then": {
+              "effect": "deny"
+            }
+          },
+          "policyType": "Custom"
+        }
+      }
+    }
+  }
+}

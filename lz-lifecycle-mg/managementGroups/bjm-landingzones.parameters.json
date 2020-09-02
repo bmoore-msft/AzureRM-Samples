@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "managementGroup": {
+      "value": {
+        "parentName": "bjm",
+        "name": "bjm-landingzones",
+        "displayName": "landing-zones"
+      }
+    },
+    "subscriptions": {
+      "value": []
+    },
+    "policyDefinitions": {
+      "value": []
+    },
+    "policySetDefinitions": {
+      "value": []
+    },
+    "policyAssignments": {
+      "value": [
+        "Deny-Subnet-Without-Nsg",
+        "Deploy-SQL-DB-Auditing",
+        "Deploy-VM-Backup",
+        "Enforce-SQL-Encryption"
+      ]
+    }
+  }
+}

@@ -28,8 +28,9 @@ foreach($p in $defs){
     $md = $p.properties.metadata | Select-object -property * -ExcludeProperty createdBy, createdOn, updatedBy, updatedOn
     $q = $p.properties | Select-object -property * -ExcludeProperty metadata, policytype, PolicyDefinitions.policyDefinitionReferenceId 
     $q | Add-member -MemberType NoteProperty -Name policyType -value "Custom"
-    $q | Add-Member -MemberType NoteProperty -Name 'metadata' -Value $md
-
+    if((get-member -MemberType NoteProperty -InputObject $md) -ne $null){
+        $q | Add-Member -MemberType NoteProperty -Name 'metadata' -Value $md
+    }
     $json = @{
         scope = $scope
         name = $p.ResourceName
@@ -42,7 +43,7 @@ foreach($p in $defs){
         '$schema' = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#"
         contentVersion = "1.0.0.0"
         parameters = @{
-            policyDefinition = @{
+            policySetDefinition = @{
                 value = $json
             }
         }

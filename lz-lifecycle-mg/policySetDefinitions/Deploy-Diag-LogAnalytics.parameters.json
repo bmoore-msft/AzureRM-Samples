@@ -4,7 +4,7 @@
   "parameters": {
     "policySetDefinition": {
       "value": {
-        "scope": "Microsoft.Management/managementGroups/bjm",
+        "name": "Deploy-Diag-LogAnalytics",
         "properties": {
           "Description": "This initiative configures application Azure resources to forward diagnostic logs and metrics to an Azure Log Analytics workspace.",
           "DisplayName": "Deploy-Diag-LogAnalytics",
@@ -19,9 +19,8 @@
             }
           },
           "PolicyDefinitionGroups": null,
-          "PolicyDefinitions": [
+          "policyDefinitions": [
             {
-              "policyDefinitionReferenceId": "7236125568528343678",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-NIC",
               "parameters": {
                 "logAnalytics": {
@@ -30,7 +29,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "16237567380538299695",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-AA",
               "parameters": {
                 "logAnalytics": {
@@ -39,7 +37,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "12685756144414362153",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-PublicIP",
               "parameters": {
                 "logAnalytics": {
@@ -48,7 +45,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "2557958870151738256",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-LoadBalancer",
               "parameters": {
                 "logAnalytics": {
@@ -57,7 +53,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "4538039732467449756",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-NetworkSecurityGroups",
               "parameters": {
                 "logAnalytics": {
@@ -66,7 +61,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "5161149613138249385",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-KeyVault",
               "parameters": {
                 "logAnalytics": {
@@ -75,7 +69,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "16623885990575636691",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-CognitiveServices",
               "parameters": {
                 "logAnalytics": {
@@ -84,7 +77,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "14165180690437289514",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-DLAnalytics",
               "parameters": {
                 "logAnalytics": {
@@ -93,7 +85,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "13371143819958730506",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-DataLakeStore",
               "parameters": {
                 "logAnalytics": {
@@ -102,7 +93,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "2071678625413859115",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-EventHub",
               "parameters": {
                 "logAnalytics": {
@@ -111,7 +101,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "16343927162737995596",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-iotHub",
               "parameters": {
                 "logAnalytics": {
@@ -120,7 +109,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "5158551526259161161",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-LogicAppsWF",
               "parameters": {
                 "logAnalytics": {
@@ -129,7 +117,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "3565767401079350483",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-LogicAppsISE",
               "parameters": {
                 "logAnalytics": {
@@ -138,7 +125,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "8137866490937856070",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-RecoveryVault",
               "parameters": {
                 "logAnalytics": {
@@ -147,7 +133,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "12916195990937786417",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-SearchServices",
               "parameters": {
                 "logAnalytics": {
@@ -156,7 +141,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "9087684938078686846",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-ServiceBus",
               "parameters": {
                 "logAnalytics": {
@@ -165,7 +149,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "1436434173336656375",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-SQLDBs",
               "parameters": {
                 "logAnalytics": {
@@ -174,7 +157,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "5057222585536622942",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-SQLElasticPools",
               "parameters": {
                 "logAnalytics": {
@@ -183,7 +165,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "1432091505729419124",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-APIMgmt",
               "parameters": {
                 "logAnalytics": {
@@ -192,7 +173,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "18134267480412652992",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-ApplicationGateway",
               "parameters": {
                 "logAnalytics": {
@@ -201,7 +181,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "8388389559870572478",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-Batch",
               "parameters": {
                 "logAnalytics": {
@@ -210,7 +189,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "11192323136602097727",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-MySQL",
               "parameters": {
                 "logAnalytics": {
@@ -219,7 +197,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "7568623331654212445",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-PostgreSQL",
               "parameters": {
                 "logAnalytics": {
@@ -228,7 +205,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "17748756007148882262",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-CDNEndpoints",
               "parameters": {
                 "logAnalytics": {
@@ -237,7 +213,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "17566721830488803368",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-CosmosDB",
               "parameters": {
                 "logAnalytics": {
@@ -246,7 +221,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "15931864125238299472",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-DataFactory",
               "parameters": {
                 "logAnalytics": {
@@ -255,7 +229,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "2952564532567566124",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-Firewall",
               "parameters": {
                 "logAnalytics": {
@@ -264,7 +237,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "12523335183303523469",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-PowerBIEmbedded",
               "parameters": {
                 "logAnalytics": {
@@ -273,7 +245,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "17060547101037299375",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-StreamAnalytics",
               "parameters": {
                 "logAnalytics": {
@@ -282,7 +253,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "6702667909971191151",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-ExpressRoute",
               "parameters": {
                 "logAnalytics": {
@@ -291,7 +261,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "17715931723533988224",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-ACI",
               "parameters": {
                 "logAnalytics": {
@@ -300,7 +269,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "524463144292725949",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-ACR",
               "parameters": {
                 "logAnalytics": {
@@ -309,7 +277,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "10130212469996596913",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-VirtualNetwork",
               "parameters": {
                 "logAnalytics": {
@@ -318,7 +285,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "17249814480476613114",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-VM",
               "parameters": {
                 "logAnalytics": {
@@ -327,7 +293,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "16803376314801817083",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-VMSS",
               "parameters": {
                 "logAnalytics": {
@@ -336,7 +301,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "2031506689370542266",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-VNetGW",
               "parameters": {
                 "logAnalytics": {
@@ -345,7 +309,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "15407192821715569861",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-AKS",
               "parameters": {
                 "logAnalytics": {
@@ -354,7 +317,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "17213255122979381246",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-Website",
               "parameters": {
                 "logAnalytics": {
@@ -363,7 +325,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "17165387524202107114",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-AnalysisService",
               "parameters": {
                 "logAnalytics": {
@@ -372,7 +333,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "13426869199552741022",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-EventGridTopic",
               "parameters": {
                 "logAnalytics": {
@@ -381,7 +341,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "105879099833677357",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-EventGridSub",
               "parameters": {
                 "logAnalytics": {
@@ -390,7 +349,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "9850618825532501923",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-HDInsight",
               "parameters": {
                 "logAnalytics": {
@@ -399,7 +357,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "5865748922408110407",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-RedisCache",
               "parameters": {
                 "logAnalytics": {
@@ -408,7 +365,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "3593019545976924523",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-Relay",
               "parameters": {
                 "logAnalytics": {
@@ -417,7 +373,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "13856581306682461017",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-SignalR",
               "parameters": {
                 "logAnalytics": {
@@ -426,7 +381,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "12212520351949118745",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-TrafficManager",
               "parameters": {
                 "logAnalytics": {
@@ -435,7 +389,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "14904583669671807849",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-WebServerFarm",
               "parameters": {
                 "logAnalytics": {
@@ -444,7 +397,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "8550486177634190353",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-SQLMI",
               "parameters": {
                 "logAnalytics": {
@@ -453,7 +405,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "11982436241091362267",
               "policyDefinitionId": "/providers/Microsoft.Management/managementGroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-TimeSeriesInsights",
               "parameters": {
                 "logAnalytics": {
@@ -462,7 +413,6 @@
               }
             },
             {
-              "policyDefinitionReferenceId": "17989626042683077847",
               "policyDefinitionId": "/providers/Microsoft.Management/managementgroups/bjm/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-MlWorkspace",
               "parameters": {
                 "logAnalytics": {
@@ -471,10 +421,8 @@
               }
             }
           ],
-          "policyType": "Custom",
-          "metadata": {}
-        },
-        "name": "Deploy-Diag-LogAnalytics"
+          "policyType": "Custom"
+        }
       }
     }
   }

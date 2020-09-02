@@ -1,0 +1,47 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "managementGroup": {
+            "value": {
+                "name": "bjm",
+                "displayName": "Prod",
+                "parentName": ""
+            }
+        },
+        "subscriptions": {
+            "value": [
+                "0cec7090-2e08-4498-9337-eb96ade50821" 
+            ]
+        },
+        "policyDefinitions": {
+            "value": [
+                "Append-KV-SoftDelete",
+                "Deny-AppGW-Without-WAF",
+                "Deploy-ASC-Standard"
+           ]
+        },
+        "policySetDefinitions": {
+            "value": [
+                "Deny-PublicEndpoints",
+                "Deploy-Diag-LogAnalytics",
+                "Deploy-Sql-Security"
+            ]
+        },
+        "policyAssignments": {
+            "value": [
+                "Deny-Subnet-Without-Nsg",
+                "Deploy-SQL-DB-Auditing",
+                "Deploy-VM-Backup",
+                "Enforce-SQL-Encryption",
+                "Deploy-Log-Analytics",
+                "Deploy-ASC-Monitoring",
+                "Deploy-ASC-Security",
+                "Deploy-AzActivity-Log",
+                "Deploy-Resource-Diag",
+                "Deploy-VM-Monitoring",
+                "DataProtectionSecurityCenter"
+            ]
+        }
+    }
+}

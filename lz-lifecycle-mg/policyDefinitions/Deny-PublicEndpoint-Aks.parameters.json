@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "policyDefinition": {
+      "value": {
+        "name": "Deny-PublicEndpoint-Aks",
+        "properties": {
+          "Description": "This policy restricts creation of non-private AKS clusters",
+          "DisplayName": "Deny-PublicEndpoint-Aks",
+          "Mode": "All",
+          "Parameters": null,
+          "PolicyRule": {
+            "if": {
+              "allOf": [
+                {
+                  "field": "type",
+                  "equals": "Microsoft.ContainerService/managedClusters"
+                },
+                {
+                  "field": "Microsoft.ContainerService/managedClusters/apiServerAccessProfile.enablePrivateCluster",
+                  "notequals": "true"
+                }
+              ]
+            },
+            "then": {
+              "effect": "Deny"
+            }
+          },
+          "policyType": "Custom"
+        }
+      }
+    }
+  }
+}
