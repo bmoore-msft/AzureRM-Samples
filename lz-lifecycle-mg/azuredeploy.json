@@ -28,8 +28,7 @@
             "location": "[deployment().location]",
             "copy": {
                 "name": "parametersDeploymentLoop",
-                "count": "[length(parameters('groups'))]",
-                //"mode": "Serial"
+                "count": "[length(parameters('groups'))]"
             },
             "properties": {
                 "mode": "Incremental",
