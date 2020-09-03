@@ -5,7 +5,6 @@
     "policyAssignment": {
       "value": {
         "name": "Deploy-VM-Monitoring",
-        "deploymentScope": "Microsoft.Management/managementGroups/bjm",
         "identity": {
           "type": "SystemAssigned"
         },

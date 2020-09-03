@@ -5,7 +5,6 @@
     "policyAssignment": {
       "value": {
         "name": "Deploy-Log-Analytics",
-        "deploymentScope": "Microsoft.Management/managementGroups/bjm-management",
         "identity": {
           "type": "SystemAssigned"
         },

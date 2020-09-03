@@ -5,7 +5,6 @@
     "policyAssignment": {
       "value": {
         "name": "Enforce-SQL-Encryption",
-        "deploymentScope": "Microsoft.Management/managementGroups/bjm-landingzones",
         "identity": {
           "type": "SystemAssigned"
         },

@@ -31,11 +31,12 @@ function Get-Children($id, $children, [array]$output){
 # Get the top-level or root group for export
 $mg = Get-AzManagementGroup -GroupName $root -Expand -Recurse
 
-$mgs = @($root)
-
+$mgs = @()
 $mgs = Get-Children $mg.id $mg.children $mgs
 
+$mgs += $root
 $mgs = $mgs | Select -Unique
+[array]::Reverse($mgs) # reverse the order for dependencies to be honored
 
 $tenantId = (Get-AzContext).Tenant.Id
 
@@ -104,7 +105,7 @@ foreach($g in $mgs){
             # Get PolicyAssignment JSON
             $json = Get-PolicyAssignmentObject $pa
             # Write parameter file
-            $json | ConvertTo-Json -Depth 50 | Set-Content -Path "$PSScriptRoot/policySetDefinitions/$($pa.name).parameters.json"
+            $json | ConvertTo-Json -Depth 50 | Set-Content -Path "$PSScriptRoot/policyAssignments/$($pa.name).parameters.json"
         }
     }
 
