@@ -188,11 +188,11 @@
                     },
                     "variables": {
                         // this variable compensates for the ARM limitation in the "scope" property
-                        "deployToMG": "[contains(parameters('policyAssignment').deploymentScope, 'Microsoft.Management/managementGroups')]"
+                        //"deployToMG": "[contains(parameters('policyAssignment').deploymentScope, 'Microsoft.Management/managementGroups')]"
                     },
                     "resources": [
                         {
-                            "condition": "[variables('deployToMG')]", // MG level deployments can be done with the scope property
+                            //"condition": "[variables('deployToMG')]", // MG level deployments can be done with the scope property
                             //"scope": "[parameters('policyAssignment').deploymentScope]",
                             "type": "Microsoft.Authorization/policyAssignments",
                             "apiVersion": "2019-09-01",

@@ -5,7 +5,6 @@
     "policyAssignment": {
       "value": {
         "name": "Deploy-VM-Backup",
-        "deploymentScope": "Microsoft.Management/managementGroups/bjm-landingzones",
         "identity": {
           "type": "SystemAssigned"
         },

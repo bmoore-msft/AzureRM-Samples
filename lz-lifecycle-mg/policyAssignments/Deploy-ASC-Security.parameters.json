@@ -5,7 +5,6 @@
     "policyAssignment": {
       "value": {
         "name": "Deploy-ASC-Security",
-        "deploymentScope": "Microsoft.Management/managementGroups/bjm",
         "identity": {
           "type": "SystemAssigned"
         },

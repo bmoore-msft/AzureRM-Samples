@@ -5,7 +5,6 @@
     "policyAssignment": {
       "value": {
         "name": "Deploy-SQL-DB-Auditing",
-        "deploymentScope": "Microsoft.Management/managementGroups/bjm-landingzones",
         "identity": {
           "type": "SystemAssigned"
         },
