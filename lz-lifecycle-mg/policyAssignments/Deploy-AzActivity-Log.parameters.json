@@ -5,7 +5,6 @@
     "policyAssignment": {
       "value": {
         "name": "Deploy-AzActivity-Log",
-        "deploymentScope": "Microsoft.Management/managementGroups/bjm",
         "identity": {
           "type": "SystemAssigned"
         },

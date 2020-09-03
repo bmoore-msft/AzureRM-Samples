@@ -5,12 +5,12 @@
     "groups": {
       "value": [
         "bjm",
-        "bjm-online",
-        "bjm-landingzones",
-        "bjm-sandboxes",
-        "bjm-decomissioned",
+        "bjm-platform",
         "bjm-management",
-        "bjm-platform"
+        "bjm-decomissioned",
+        "bjm-sandboxes",
+        "bjm-landingzones",
+        "bjm-online"
       ]
     }
   }

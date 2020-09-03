@@ -5,7 +5,6 @@
     "policyAssignment": {
       "value": {
         "name": "Deny-Subnet-Without-Nsg",
-        "deploymentScope": "Microsoft.Management/managementGroups/bjm-landingzones",
         "identity": null,
         "location": "eastus",
         "properties": {

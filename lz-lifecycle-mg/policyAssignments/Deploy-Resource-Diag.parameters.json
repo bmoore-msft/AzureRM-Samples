@@ -5,7 +5,6 @@
     "policyAssignment": {
       "value": {
         "name": "Deploy-Resource-Diag",
-        "deploymentScope": "Microsoft.Management/managementGroups/bjm",
         "identity": {
           "type": "SystemAssigned"
         },
