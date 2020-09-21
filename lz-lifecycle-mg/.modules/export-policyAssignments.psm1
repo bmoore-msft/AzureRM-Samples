@@ -24,7 +24,7 @@ param(
 
     # remove metadata property - but only remove the audit metadata in case user added something custom
     $md = $a.properties.metadata | Select-object -property * -ExcludeProperty createdBy, createdOn, updatedBy, updatedOn
-    $q = $a.properties | Select-object -property * -ExcludeProperty metadata, EnforcementMode
+    $q = $a.properties | Select-object -property * -ExcludeProperty metadata, EnforcementMode, scope
     if($a.properties.EnforcementMode -eq 0){
         $enforcementMode = "Default"
     }else{

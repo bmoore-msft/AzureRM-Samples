@@ -4,8 +4,8 @@
   "parameters": {
     "managementGroup": {
       "value": {
-        "parentName": "",
         "name": "bjm",
+        "parentName": "",
         "displayName": "Prod"
       }
     },

@@ -10,7 +10,6 @@
         },
         "location": "eastus",
         "properties": {
-          "Scope": "/providers/Microsoft.Management/managementGroups/bjm-management",
           "NotScopes": null,
           "DisplayName": "Deploy-Log-Analytics",
           "Description": "Deploy-Log-Analytics",

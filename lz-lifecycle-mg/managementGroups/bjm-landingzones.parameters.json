@@ -4,8 +4,8 @@
   "parameters": {
     "managementGroup": {
       "value": {
-        "parentName": "bjm",
         "name": "bjm-landingzones",
+        "parentName": "bjm",
         "displayName": "landing-zones"
       }
     },

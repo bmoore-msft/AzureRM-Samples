@@ -4,14 +4,13 @@
   "parameters": {
     "managementGroup": {
       "value": {
-        "parentName": "bjm-landingzones",
         "name": "bjm-online",
+        "parentName": "bjm-landingzones",
         "displayName": "online"
       }
     },
     "subscriptions": {
-      "value": [
-      ]
+      "value": []
     },
     "policyDefinitions": {
       "value": []

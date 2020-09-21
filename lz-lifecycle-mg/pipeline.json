@@ -1,0 +1,166 @@
+{
+    "variables": {
+        "appId": {
+            "value": "05ff27fb-fcd2-4bae-97ee-4e60a67ff73b"
+        },
+        "environment": {
+            "value": "AzureCloud"
+        },
+        "secret": {
+            "value": null,
+            "isSecret": true
+        },
+        "skipComponentGovernanceDetection": {
+            "value": "true"
+        },
+        "subscriptionId": {
+            "value": "0cec7090-2e08-4498-9337-eb96ade50821"
+        },
+        "system.debug": {
+            "value": "false",
+            "allowOverride": true
+        },
+        "tenantId": {
+            "value": "6457d1f2-4394-4fc2-b163-e46ffcbbec5c"
+        }
+    },
+    "jobAuthorizationScope": 1,
+    "jobTimeoutInMinutes": 60,
+    "jobCancelTimeoutInMinutes": 5,
+    "badgeEnabled": true,
+    "process": {
+        "phases": [
+            {
+                "steps": [
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Connect To Azure",
+                        "timeoutInMinutes": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "e213ff0f-5d5c-4791-802d-52ea3e7be1f1",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "targetType": "inline",
+                            "filePath": "",
+                            "arguments": "",
+                            "script": "Set-PSRepository -InstallationPolicy Trusted -Name PSGallery -verbose\n\nInstall-Module -Name Az -AllowClobber -verbose -RequiredVersion \"4.5.0\"\n\n$pscredential = New-Object System.Management.Automation.PSCredential(\"$(appId)\", (ConvertTo-SecureString \"$(secret)\" -AsPlainText -Force))\n\nConnect-AzAccount -ServicePrincipal -Credential $pscredential -TenantId \"$(tenantId)\" -Subscription \"$(subscriptionId)\" -Environment \"$(Environment)\" -Verbose\n\n",
+                            "errorActionPreference": "stop",
+                            "failOnStderr": "false",
+                            "ignoreLASTEXITCODE": "false",
+                            "pwsh": "true",
+                            "workingDirectory": ""
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Deploy Template",
+                        "timeoutInMinutes": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "e213ff0f-5d5c-4791-802d-52ea3e7be1f1",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "targetType": "filePath",
+                            "filePath": "Deploy-AzTemplate.ps1",
+                            "arguments": "-ArtifactStagingDirectory \"lz-lifecycle-mg\" -Location \"westus\" ",
+                            "script": "# Write your PowerShell commands here.\n\nWrite-Host \"Hello World\"\n",
+                            "errorActionPreference": "stop",
+                            "failOnStderr": "false",
+                            "ignoreLASTEXITCODE": "false",
+                            "pwsh": "true",
+                            "workingDirectory": ""
+                        }
+                    }
+                ],
+                "name": "Agent job 1",
+                "refName": "Job_1",
+                "condition": "succeeded()",
+                "target": {
+                    "executionOptions": {
+                        "type": 0
+                    },
+                    "allowScriptsAuthAccessOption": false,
+                    "type": 1
+                },
+                "jobAuthorizationScope": 1
+            }
+        ],
+        "target": {
+            "agentSpecification": {
+                "identifier": "windows-2019"
+            }
+        },
+        "type": 1
+    },
+    "repository": {
+        "properties": {
+            "apiUrl": "https://api.github.com/repos/bmoore-msft/AzureRM-Samples",
+            "branchesUrl": "https://api.github.com/repos/bmoore-msft/AzureRM-Samples/branches",
+            "cloneUrl": "https://github.com/bmoore-msft/AzureRM-Samples.git",
+            "connectedServiceId": "04c0c2f9-ce5a-4c02-867a-a05d992753c3",
+            "defaultBranch": "master",
+            "fullName": "bmoore-msft/AzureRM-Samples",
+            "hasAdminPermissions": "True",
+            "isFork": "False",
+            "isPrivate": "False",
+            "lastUpdated": "09/03/2020 20:05:04",
+            "manageUrl": "https://github.com/bmoore-msft/AzureRM-Samples",
+            "nodeId": "MDEwOlJlcG9zaXRvcnk0OTAwOTUyMw==",
+            "ownerId": "10090014",
+            "orgName": "bmoore-msft",
+            "refsUrl": "https://api.github.com/repos/bmoore-msft/AzureRM-Samples/git/refs",
+            "safeRepository": "bmoore-msft/AzureRM-Samples",
+            "shortName": "AzureRM-Samples",
+            "ownerAvatarUrl": "https://avatars1.githubusercontent.com/u/10090014?v=4",
+            "archived": "False",
+            "externalId": "49009523",
+            "ownerIsAUser": "True",
+            "checkoutNestedSubmodules": "false",
+            "cleanOptions": "0",
+            "fetchDepth": "0",
+            "gitLfsSupport": "false",
+            "reportBuildStatus": "true",
+            "skipSyncSource": "false",
+            "labelSourcesFormat": "$(build.buildNumber)",
+            "labelSources": "0"
+        },
+        "id": "bmoore-msft/AzureRM-Samples",
+        "type": "GitHub",
+        "name": "bmoore-msft/AzureRM-Samples",
+        "url": "https://github.com/bmoore-msft/AzureRM-Samples.git",
+        "defaultBranch": "master",
+        "clean": "false",
+        "checkoutSubmodules": false
+    },
+    "quality": 1,
+    "id": 18,
+    "name": "lz-lifecycle-mg-pipeline",
+    "url": "https://dev.azure.com/azurequickstarts/b191bd7a-37bb-47b0-870c-3f1270a79b3d/_apis/build/Definitions/18?revision=12",
+    "uri": "vstfs:///Build/Definition/18",
+    "path": "\\",
+    "type": 2,
+    "queueStatus": 0,
+    "revision": 12,
+    "createdDate": "2020-09-21T23:34:04.570Z",
+    "project": {
+        "id": "b191bd7a-37bb-47b0-870c-3f1270a79b3d",
+        "name": "azure-quickstart-templates",
+        "description": "Pipelines for the Azure/azure-quickstart-templates repo",
+        "url": "https://dev.azure.com/azurequickstarts/_apis/projects/b191bd7a-37bb-47b0-870c-3f1270a79b3d",
+        "state": 1,
+        "revision": 21,
+        "visibility": 2,
+        "lastUpdateTime": "2019-07-08T21:54:49.103Z"
+    }
+}
