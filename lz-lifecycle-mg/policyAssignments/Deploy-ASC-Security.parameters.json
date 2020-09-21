@@ -10,7 +10,6 @@
         },
         "location": "eastus",
         "properties": {
-          "Scope": "/providers/Microsoft.Management/managementGroups/bjm",
           "NotScopes": null,
           "DisplayName": "Deploy-ASC",
           "Description": "Deploy-ASC",

@@ -10,7 +10,6 @@
         },
         "location": "eastus",
         "properties": {
-          "Scope": "/providers/Microsoft.Management/managementGroups/bjm-landingzones",
           "NotScopes": null,
           "DisplayName": "Deploy-SQL-Audit",
           "Description": "Deploy-SQL-Audit",

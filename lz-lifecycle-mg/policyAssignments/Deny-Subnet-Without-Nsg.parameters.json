@@ -8,7 +8,6 @@
         "identity": null,
         "location": "eastus",
         "properties": {
-          "Scope": "/providers/Microsoft.Management/managementGroups/bjm-landingzones",
           "NotScopes": null,
           "DisplayName": "Deny-Subnet-Without-Nsg",
           "Description": "Deny-Subnet-Without-Nsg",

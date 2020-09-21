@@ -52,10 +52,10 @@ foreach($g in $mgs){
     }
 
     # managementGroup parameter value
-    $managmentGroupParam = @{
+    $managmentGroupParam = [ordered]@{
         name = $mg.Name
-        displayName = $mg.displayName
         parentName = $parentMg
+        displayName = $mg.displayName
     }
 
     # subscriptions parameter value

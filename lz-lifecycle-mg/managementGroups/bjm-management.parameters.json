@@ -4,14 +4,14 @@
   "parameters": {
     "managementGroup": {
       "value": {
-        "parentName": "bjm-platform",
         "name": "bjm-management",
+        "parentName": "bjm-platform",
         "displayName": "management"
       }
     },
     "subscriptions": {
       "value": [
-        "0cec7090-2e08-4498-9337-eb96ade50821"
+        "553b8572-7d61-4f37-a0b8-01eb4b95fdb6"
       ]
     },
     "policyDefinitions": {

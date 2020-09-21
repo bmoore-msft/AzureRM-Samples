@@ -4,8 +4,8 @@
   "parameters": {
     "managementGroup": {
       "value": {
-        "parentName": "bjm",
         "name": "bjm-sandboxes",
+        "parentName": "bjm",
         "displayName": "sandboxes"
       }
     },
