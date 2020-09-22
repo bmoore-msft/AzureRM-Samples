@@ -74,7 +74,6 @@
                             "targetType": "filePath",
                             "filePath": "Deploy-AzTemplate.ps1",
                             "arguments": "-ArtifactStagingDirectory \"lz-lifecycle-mg\" -Location \"westus\" ",
-                            "script": "# Write your PowerShell commands here.\n\nWrite-Host \"Hello World\"\n",
                             "errorActionPreference": "stop",
                             "failOnStderr": "false",
                             "ignoreLASTEXITCODE": "false",
