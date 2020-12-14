@@ -80,6 +80,30 @@
                             "pwsh": "true",
                             "workingDirectory": ""
                         }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Deploy BYOT Template",
+                        "timeoutInMinutes": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "e213ff0f-5d5c-4791-802d-52ea3e7be1f1",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "targetType": "filePath",
+                            "filePath": "Deploy-AzTemplate.ps1",
+                            "arguments": "-ArtifactStagingDirectory \"BYOT\" -Location \"westus\" ",
+                            "errorActionPreference": "stop",
+                            "failOnStderr": "false",
+                            "ignoreLASTEXITCODE": "false",
+                            "pwsh": "true",
+                            "workingDirectory": ""
+                        }
                     }
                 ],
                 "name": "Agent job 1",
