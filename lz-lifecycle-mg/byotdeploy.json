@@ -1,0 +1,61 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "byot": {
+            "type": "array"
+        },
+        "_artifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
+            },
+            "defaultValue": "[deployment().properties.templateLink.uri]"
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+            },
+            "defaultValue": ""
+        }
+    },
+    "resources": [
+
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "[concat('byotDeployment-', parameters('byot')[copyIndex()])]",
+            "location": "[deployment().location]",
+            "subscriptionId": "[if(not(empty(parameters('byot')[copyIndex()].subscriptionId)), parameters('byot')[copyIndex()].subscriptionId, json('null'))]",
+            "resourceGroup": "[if(not(empty(parameters('byot')[copyIndex()].resourceGroupName)), parameters('byot')[copyIndex()].resourceGroupName, json('null'))]",
+            "copy": {
+                "name": "byotLoop",
+                "count": "[length(parameters('byot'))]",
+                "mode": "Serial"
+            },
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "contentVersion": "1.0.0.0",
+                    "uri": "[uri(parameters('_artifactsLocation'), concat(parameters('byot')[copyIndex()].templateFileName, parameters('_artifactsLocationSasToken')))]"
+                },
+                "parametersLink": {
+                    "uri": "[if(not(empty(parameters('byot')[copyIndex()].parameterFileName)), 
+                                uri(parameters('_artifactsLocation'), concat(parameters('byot')[copyIndex()].parameterFileName, parameters('_artifactsLocationSasToken'))), 
+                                json('null'))]"
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "BYOTs": {
+            "type": "array",
+            "copy": {
+                "count": "[length(parameters('byot'))]",
+                "input": "[parameters('byot')[copyIndex()]]"
+
+            }
+        }
+    }
+}

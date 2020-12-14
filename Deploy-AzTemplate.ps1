@@ -257,7 +257,7 @@ else {
         }
         "managementGroup" {           
              New-AzManagementGroupDeployment -Name $DeploymentName `
-            -ManagementGroupId $managementGroupId 
+            -ManagementGroupId $(get-azcontext).Tenant.Id 
             -Location $Location `
             @TemplateArgs `
             @OptionalParameters `
