@@ -1,0 +1,139 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "objectId": {
+            "type": "string",
+            "defaultValue": "7c1752e8-668a-4aed-9405-20d1e9daf1e6", //bmoore@microsoft.com in the msft tenant
+            "metadata": {
+                "description": "Specifies the object ID of a user, service principal or security group in the Azure Active Directory tenant for the vault. The object ID must be unique for the list of access policies. Get it by using Get-AzADUser or Get-AzADServicePrincipal cmdlets."
+            }
+        },
+        "count": {
+            "type": "int",
+            "defaultValue": 256, // the maximum number of parameters allowed in a template is 256
+            "metadata": {
+                "description": "Number of secrets to create and reference"
+            }
+        }
+    },
+    "variables": {
+        "keyVaultName": "[format('kv{0}', uniqueString(resourceGroup().id))]",
+        "keyVaultId": "[format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.KeyVault/vaults/{2}', subscription().subscriptionId, resourceGroup().name, variables('keyVaultName'))]",
+        "copy": [
+            //copy loops only create arrays, so create a string that can be converted to a json object
+            {
+                "name": "keyVaultRefs",
+                "count": "[parameters('count')]",
+                "input": "[format('''param{0}'':{{''reference'':{{''keyVault'':{{''id'':''{1}''}},''secretName'':''secret{0}''}}}}', copyIndex('keyVaultRefs'), variables('keyVaultId'))]"
+            },
+            {
+                "name": "keyVaultDefs",
+                "count": "[parameters('count')]",
+                "input": "[format('''param{0}'':{{''type'':''secureString''}}', copyIndex('keyVaultDefs'))]"
+            }
+        ],
+        // convert the string/array to json
+        "keyVaultRefParams": "[json(replace(replace(replace(replace(string(variables('keyVaultRefs')),'[', '{'), ']', '}'), '\"',''), '''', '\"'))]",
+        "keyVaultParamDefs": "[json(replace(replace(replace(replace(string(variables('keyVaultDefs')),'[', '{'), ']', '}'), '\"',''), '''', '\"'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.KeyVault/vaults",
+            "apiVersion": "2019-09-01",
+            "name": "[variables('keyVaultName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "tenantId": "[subscription().tenantId]",
+                "sku": {
+                    "name": "Standard",
+                    "family": "A"
+                },
+                "enabledForTemplateDeployment": true,
+                "enableSoftDelete": false,
+                "accessPolicies": [
+                    {
+                        "objectId": "[parameters('objectId')]",
+                        "tenantId": "[subscription().tenantId]",
+                        "permissions": {
+                            "secrets": [ "list", "get", "set" ]
+                        }
+                    }
+                ],
+                "networkAcls": {
+                    "defaultAction": "Allow",
+                    "bypass": "AzureServices"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "apiVersion": "2019-09-01",
+            "name": "[format('{0}/secret{1}', variables('keyVaultName'), copyIndex())]",
+            "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+            ],
+            "copy": {
+                "name": "secretLoop",
+                "count": "[length(variables('keyVaultRefs'))]"
+            },
+            "properties": {
+                "value": "[copyIndex()]"
+            }
+        },
+        {
+            // this extra deployment is needed because the vault and secrets are created and used in the same overall deployment
+            // the deployment that consumes the secrets will be validated by ARM up front, unless a dependency is force between the 
+            // two at run-time, this extra deployment creates the dependency
+            // if the secrets already exist or the parameters for the template that consumes the secrets aren't dynamically 
+            // generated this isn't needed 
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "genParams",
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "outer"
+                },
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [],
+                    "outputs": {
+                        "kvRefs": {
+                            "type": "object",
+                            "value": "[variables('keyVaultRefParams')]"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-06-01",
+            "name": "manySecrets",
+            "dependsOn": [
+                "secretLoop"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "outer"
+                },
+                "mode": "Incremental",
+                "parameters": "[reference('genParams').outputs.kvRefs.value]", //variables('keyVaultRefParams')
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": "[variables('keyVaultParamDefs')]",
+                    "resources": []
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "parameters": {
+            "type": "object",
+            "value": "[reference('manySecrets').parameters]"
+        }
+    }
+}

@@ -404,7 +404,7 @@
           "computerName": "[parameters('vmName')]",
           "adminUsername": "[parameters('adminUsername')]",
           "adminPassword": "[parameters('adminPasswordOrKey')]",
-          "linuxConfiguration": "[if(variables('isWindowsOS'), json('null'), variables('linuxConfiguration'))]",
+          "linuxConfiguration": "[if(and(not(variables('isWindowsOS')), equals(parameters('authenticationType'), 'sshPublicKey')), variables('linuxConfiguration'), json('null'))]",
           "windowsConfiguration": "[if(variables('isWindowsOS'), variables('windowsConfiguration'), json('null'))]"
         },
         "storageProfile": {
