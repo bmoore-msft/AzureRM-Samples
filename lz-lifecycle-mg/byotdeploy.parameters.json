@@ -1,0 +1,22 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "byot": {
+            "value": [
+                {
+                    "subscriptionId": "0cec7090-2e08-4498-9337-eb96ade50821",
+                    "resourceGroupName": "byot1",
+                    "templateFileName": "./byot/byot1.json",
+                    "parameterFileName": ""
+                },
+                {
+                    "subscriptionId": "0cec7090-2e08-4498-9337-eb96ade50821",
+                    "resourceGroupName": "byot2",
+                    "templateFileName": "./byot/byot2.json",
+                    "parameterFileName": ""
+                }
+            ]
+        }
+    }
+}
