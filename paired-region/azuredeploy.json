@@ -1,74 +1,80 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "location": {
       "type": "string"
     }
   },
+  // See: https://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions#what-are-paired-regions
   "variables": {
     "pairedLocations": {
-      "eastasia": "southeastasia",
-      "southeastasia": "eastasia",
+            "eastasia": "southeastasia",
+            "southeastasia": "eastasia",            
+            
+            "australiacentral": "australiacentral2",
+            "australiacentral2": "australiacentral",
+            "australiaeast": "australiasoutheast",
+            "australiasoutheast": "australiaeast",
+            
+            "brazilsouth": "southcentralus",
+            "brazilsoutheast": "brazilsouth",
+            
+            "canadacentral": "canadaeast",
+            "canadaeast": "canadacentral",
+            
+            "chinanorth": "chinaeast",
+            "chinaeast": "chinanorth",
+            "chinanorth2": "chinaeast2",
+            "chinaeast2": "chinanorth2",
 
-      "australiaeast": "australiasoutheast",
-      "australiasoutheast": "australiaeast",
-      "australiacentral": "australiacentral2",
-      "australiacentral2": "australiacentral",
-      
-      "brazilsouth": "southcentralus",
-      
-      "canadacentral": "canadaeast",
-      "canadaeast": "canadacentral",
+            "northeurope": "westeurope",
+            "westeurope": "northeurope",
 
-      "chinanorth": "chinaeast",
-      "chinaeast": "chinanorth",
-      "chinanorth2": "chinaeast2",
-      "chinaeast2": "chinanorth2",
+            "francecentral": "francesouth",
+            "francesouth": "francecentral",
 
-      "northeurope": "westeurope",
-      "westeurope": "northeurope",
+            "germanynorth": "germanynwestcentral",
+            "germanynwestcentral": "germanynorth",
 
-      "francecentral": "francesouth",
-      "francesouth": "francecentral",
+            "centralindia": "southindia",
+            "southindia": "centralindia",
+            "westindia": "southindia",
 
-      "germanycentral": "germanynNortheast",
-      "germanynNortheast": "germanycentral",
+            "japaneast": "japanwest",
+            "japanwest": "japaneast",
 
-      "centralindia": "southindia",
-      "southindia": "centralindia",
-      "westindia": "southindia",
+            "koreacentral": "koreasouth",
+            "koreasouth": "koreacentral",
 
-      "japaneast": "japanwest",
-      "japanwest": "japaneast",
+            "centralus": "eastus2",
+            "eastus": "westus",
+            "eastus2": "centralus",
+            "northcentralus": "southcentralus",
+            "southcentralus": "northcentralus",
+            "westcentralus": "westus2",
+            "westus": "eastus",
+            "westus2": "westcentralus",
 
-      "koreacentral": "koreasouth",
-      "koreasouth": "koreacentral",
+            "norwayeast": "norwaywest",
+            "norwaywest": "norwayeast",
 
-      "eastus": "westus",
-      "westus": "eastus",
-      "eastus2": "centralus",
-      "centralus": "eastus2",
-      "northcentralus": "southcentralus",
-      "southcentralus": "northcentralus",
-      "westus2": "westcentralus",
-      "westcentralus": "westus2",
+            "southafricanorth": "southafricawest",
+            "southafricawest": "southafricanorth",
 
-      "southafricanorth": "southafricawest",
-      "southafricawest": "southafricanorth",
+            "switzerlandnorth": "switzerlandwest",
+            "switzerlandwest": "switzerlandnorth",
 
-      "ukwest": "uksouth",
-      "uksouth": "ukwest",
+            "uaecentral": "uaenorth",
+            "uaenorth": "uaecentral",
 
-      "uaenorth": "uaecentral",
-      "uaecentral": "uaenorth",
+            "uksouth": "ukwest",
+            "ukwest": "uksouth",
 
-      "usdodeast": "usdodcentral",
-      "usdodcentral": "usdodeast",
-      "usgovarizona": "usgovtexas",
-      "usgovtexas": "usgovarizona",
-      "usgoviowa": "usgovvirginia",
-      "usgovvirginia": "usgovtexas"
+            "usgovarizona": "usgovtexas",
+            "usgoviowa": "usgovvirginia",
+            "usgovtexas": "usgovarizona",
+            "usgovvirginia": "usgovtexas"
     }
   },
   "resources": [],

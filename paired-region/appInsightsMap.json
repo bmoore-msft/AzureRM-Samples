@@ -1,0 +1,66 @@
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "appInsightsLocations": {
+            "australiacentral": "australiacentral",
+            "australiacentral2": "australiacentral2",
+            "australiaeast": "australiasoutheast",
+            "australiasoutheast": "australiasoutheast",
+            "brazilsouth": "brazilsouth",
+            "brazilsoutheast": "brazilsoutheast",
+            "canadacentral": "canadacentral",
+            "canadaeast": "canadacentral",
+            "centralindia": "centralindia",
+            "centralus": "centralus",
+            "eastasia": "eastasia",
+            "eastus": "eastus",
+            "eastus2": "eastus2",
+            "francecentral": "francecentral",
+            "francesouth": "francecentral",
+            "germanynorth": "germanynwestcentral",
+            "germanynwestcentral": "germanynwestcentral",
+            "japaneast": "japaneast",
+            "japanwest": "japaneast",
+            "koreacentral": "koreacentral",
+            "koreasouth": "koreacentral",
+            "northcentralus": "northcentralus",
+            "northeurope": "northeurope",
+            "norwayeast": "norwayeast",
+            "norwaywest": "norwayeast",
+            "southafricanorth": "southafricanorth",
+            "southafricawest": "southafricanorth",
+            "southcentralus": "southcentralus",
+            "southeastasia": "southeastasia",
+            "southindia": "centralindia",
+            "switzerlandnorth": "switzerlandnorth",
+            "switzerlandwest": "switzerlandwest",
+            "uaecentral": "uaenorth",
+            "uaenorth": "uaenorth",
+            "uksouth": "uksouth",
+            "ukwest": "ukwest",
+            "westcentralus": "westus2",
+            "westeurope": "westeurope",
+            "westindia": "centralindia",
+            "westus": "westus",
+            "westus2": "westus2",
+            "usgovarizona": "usgovarizona",
+            "usgoviowa": "usgovvirginia",
+            "usgovtexas": "usgovarizona",
+            "usgovvirginia": "usgovvirginia"
+        }
+    },
+    "resources": [],
+    "outputs": {
+        "pairedLocation": {
+            "type": "string",
+            "value": "[variables('appInsightsLocations')[parameters('location')]]"
+        }
+    }
+}
