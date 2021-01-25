@@ -15,20 +15,6 @@
         "description": "Password for the Virtual Machine."
       }
     },
-    "_artifactsLocation": {
-      "type": "string",
-      "defaultValue": "[deployment().properties.templateLink.uri]",
-      "metadata": {
-        "description": "Auto-generated container in staging storage account to receive post-build staging folder upload"
-      }
-    },
-    "_artifactsLocationSasToken": {
-      "type": "securestring",
-      "defaultValue": "",
-      "metadata": {
-        "description": "Auto-generated token to access _artifactsLocation"
-      }
-    },
     "vmSize": {
       "type":"string",
       "defaultValue": "Standard_A2",
@@ -45,6 +31,8 @@
     }
   },
   "variables": {
+    "_artifactsLocation": "[deployment().properties.templateLink.uri]",
+    "_artifactsLocationSasToken": "[if(contains(deployment().properties.templateLink, 'queryString'), deployment().properties.templateLink.queryString, '')]",    
     "imagePublisher": "Canonical",
     "imageOffer": "UbuntuServer",
     "OSVersion": "16.04.0-LTS",
@@ -61,7 +49,7 @@
     "fileToBeCopied": "FileToBeCopied.txt",
     "scriptFolder": ".",
     "scriptFileName": "copyfilefromazure.sh",
-    "scriptArgs": "[concat('-a ', parameters('_artifactsLocation'), ' -t \"', parameters('_artifactsLocationSasToken'), '\" -p ', variables('scriptFolder'), ' -f ', variables('fileToBeCopied'))]"
+    "scriptArgs": "[concat('-a ', variables('_artifactsLocation'), ' -t \"', variables('_artifactsLocationSasToken'), '\" -p ', variables('scriptFolder'), ' -f ', variables('fileToBeCopied'))]"
   },
   "resources": [
     {
@@ -192,7 +180,7 @@
             "forceUpdateTag": "changeThisToEnsureScriptRuns-maxlength=50",
             "settings": {
               "fileUris": [
-                "[uri(parameters('_artifactsLocation'), concat(variables('scriptFileName'), parameters('_artifactsLocationSasToken')))]"
+                "[uri(variables('_artifactsLocation'), concat(variables('scriptFileName'), '?', variables('_artifactsLocationSasToken')))]"
               ],
               "commandToExecute": "[concat('bash ', variables('scriptFileName'), ' ', variables('scriptArgs'))]"
             }
