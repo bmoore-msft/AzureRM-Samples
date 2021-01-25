@@ -66,7 +66,7 @@ $TemplateJSON = Get-Content $TemplateFile -Raw | ConvertFrom-Json
 
 $TemplateSchema = $TemplateJson | Select-Object -expand '$schema' -ErrorAction Ignore
 
-switch -Wildcard ($TemplateSchema){
+switch -Wildcard ($TemplateSchema) {
     '*tenantDeploymentTemplate.json*' {
         $deploymentScope = "Tenant"
     }
@@ -82,22 +82,13 @@ switch -Wildcard ($TemplateSchema){
     }
 }
 
-<#
-if ($TemplateSchema -like '*subscriptionDeploymentTemplate.json*') {
-    $deploymentScope = "Subscription"
-}
-else {
-    $deploymentScope = "ResourceGroup"
-    $OptionalParameters.Add('Mode', $Mode)
-}
-#>
-
 Write-Host "Running a $deploymentScope scoped deployment..."
 
 $ArtifactsLocationParameter = $TemplateJson | Select-Object -expand 'parameters' -ErrorAction Ignore | Select-Object -Expand '_artifactsLocation' -ErrorAction Ignore
+$useAbsolutePathStaging = $($ArtifactsLocationParameter -ne $null)
 
 #if the switch is set or the standard parameter is present in the template, upload all artifacts
-if ($UploadArtifacts -Or $ArtifactsLocationParameter -ne $null) {
+if ($UploadArtifacts -Or $useAbsolutePathStaging) {
     # Convert relative paths to absolute paths if needed
     $ArtifactStagingDirectory = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, $ArtifactStagingDirectory))
     $DSCSourceFolder = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, $DSCSourceFolder))
@@ -112,10 +103,14 @@ if ($UploadArtifacts -Or $ArtifactsLocationParameter -ne $null) {
     else {
         $JsonParameters = @{ }
     }
+    
     $ArtifactsLocationName = '_artifactsLocation'
     $ArtifactsLocationSasTokenName = '_artifactsLocationSasToken'
-    $OptionalParameters[$ArtifactsLocationName] = $JsonParameters | Select-Object -Expand $ArtifactsLocationName -ErrorAction Ignore | Select-Object -Expand 'value' -ErrorAction Ignore
-    $OptionalParameters[$ArtifactsLocationSasTokenName] = $JsonParameters | Select-Object -Expand $ArtifactsLocationSasTokenName -ErrorAction Ignore | Select-Object -Expand 'value' -ErrorAction Ignore
+    # if using _artifacts* parameters, add them to the optional params and get the value from the param file (if any)
+    if ($useAbsolutePathStaging) {
+        $OptionalParameters[$ArtifactsLocationName] = $JsonParameters | Select-Object -Expand $ArtifactsLocationName -ErrorAction Ignore | Select-Object -Expand 'value' -ErrorAction Ignore
+        $OptionalParameters[$ArtifactsLocationSasTokenName] = $JsonParameters | Select-Object -Expand $ArtifactsLocationSasTokenName -ErrorAction Ignore | Select-Object -Expand 'value' -ErrorAction Ignore
+    }
 
     # Create DSC configuration archive
     if ((Test-Path $DSCSourceFolder) -and ($BuildDscPackage)) {
@@ -136,7 +131,9 @@ if ($UploadArtifacts -Or $ArtifactsLocationParameter -ne $null) {
     # Create the storage account if it doesn't already exist
     if ($StorageAccount -eq $null) {
         $StorageResourceGroupName = 'ARM_Deploy_Staging'
-        New-AzResourceGroup -Location "$Location" -Name $StorageResourceGroupName -Force
+        if ((Get-AzResourceGroup -Name $StorageResourceGroupName -Location $Location -Verbose -ErrorAction SilentlyContinue) -eq $null) {
+            New-AzResourceGroup -Name $StorageResourceGroupName -Location $Location -Verbose -Force -ErrorAction Stop
+        }
         $StorageAccount = New-AzStorageAccount -StorageAccountName $StorageAccountName -Type 'Standard_LRS' -ResourceGroupName $StorageResourceGroupName -Location "$Location"
     }
 
@@ -146,7 +143,7 @@ if ($UploadArtifacts -Or $ArtifactsLocationParameter -ne $null) {
     $ArtifactStagingLocation = $StorageAccount.Context.BlobEndPoint + $StorageContainerName + "/"   
 
     # Generate the value for artifacts location if it is not provided in the parameter file
-    if ($OptionalParameters[$ArtifactsLocationName] -eq $null) {
+    if ($useAbsolutePathStaging -and $OptionalParameters[$ArtifactsLocationName] -eq $null) {
         #if the defaultValue for _artifactsLocation is using the template location, use the defaultValue, otherwise set it to the staging location
         $defaultValue = $ArtifactsLocationParameter | Select-Object -Expand 'defaultValue' -ErrorAction Ignore
         if ($defaultValue -like '*deployment().properties.templateLink.uri*') {
@@ -169,15 +166,22 @@ if ($UploadArtifacts -Or $ArtifactsLocationParameter -ne $null) {
             Set-AzStorageBlobContent -File $SourcePath -Blob $blobName -Container $StorageContainerName -Context $StorageAccount.Context -Force
         }
     }
+
     # Generate a 4 hour SAS token for the artifacts location if one was not provided in the parameters file
-    if ($OptionalParameters[$ArtifactsLocationSasTokenName] -eq $null) {
-        $OptionalParameters[$ArtifactsLocationSasTokenName] = (New-AzStorageContainerSASToken -Container $StorageContainerName -Context $StorageAccount.Context -Permission r -ExpiryTime (Get-Date).AddHours(4))
+    # first check to see if we need a sasToken (if it was not already provided in the param file or we're using relativePath)
+    if ($useAbsolutePathStaging -or $OptionalParameters[$ArtifactsLocationSasTokenName] -eq $null) {
+        #$OptionalParameters[$ArtifactsLocationSasTokenName] = (New-AzStorageContainerSASToken -Container $StorageContainerName -Context $StorageAccount.Context -Permission r -ExpiryTime (Get-Date).AddHours(4))
+        $sasToken = (New-AzStorageContainerSASToken -Container $StorageContainerName -Context $StorageAccount.Context -Permission r -ExpiryTime (Get-Date).AddHours(4))
     }
 
-    $TemplateArgs.Add('TemplateUri', $ArtifactStagingLocation + (Get-ChildItem $TemplateFile).Name + $OptionalParameters[$ArtifactsLocationSasTokenName])
-
-    $OptionalParameters[$ArtifactsLocationSasTokenName] = ConvertTo-SecureString $OptionalParameters[$ArtifactsLocationSasTokenName] -AsPlainText -Force
-
+    # now set the parameter value for the QueryString or _artifactsLocationSasToken as appropriate
+    if($OptionalParameters[$ArtifactsLocationSasTokenName] -eq $null -and $useAbsolutePathStaging){
+        $OptionalParameters[$ArtifactsLocationSasTokenName] = ConvertTo-SecureString $sasToken -AsPlainText -Force
+        $TemplateArgs.Add('TemplateUri', $ArtifactStagingLocation + (Get-ChildItem $TemplateFile).Name + $sasToken)
+    }elseif (!$useAbsolutePathStaging) {
+        $OptionalParameters['QueryString'] = $sasToken.TrimStart("?") # remove leading ? as it is not part of the QueryString
+        $TemplateArgs.Add('TemplateUri', $ArtifactStagingLocation + (Get-ChildItem $TemplateFile).Name)
+    }
 }
 else {
 
@@ -185,7 +189,7 @@ else {
 
 }
 
-if(Test-Path $TemplateParametersFile){
+if (Test-Path $TemplateParametersFile) {
     $TemplateArgs.Add('TemplateParameterFile', $TemplateParametersFile)
 }
 Write-Host ($TemplateArgs | Out-String)
@@ -200,7 +204,7 @@ if ($deploymentScope -eq "ResourceGroup") {
 
 if ($ValidateOnly) {
     
-    switch($deploymentScope){
+    switch ($deploymentScope) {
         "resourceGroup" {
             $ErrorMessages = Format-ValidationOutput (Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName @TemplateArgs @OptionalParameters)
         }
@@ -215,17 +219,6 @@ if ($ValidateOnly) {
         }
     }
 
-    <#    
-    if ($deploymentScope -eq "Subscription") {
-        #subscription scoped deployment
-        $ErrorMessages = Format-ValidationOutput (Test-AzDeployment -Location $Location @TemplateArgs @OptionalParameters)
-    }
-    else {
-        #resourceGroup deployment 
-        $ErrorMessages = Format-ValidationOutput (Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName @TemplateArgs @OptionalParameters)
-    }#>
-
-
     if ($ErrorMessages) {
         Write-Output '', 'Validation returned the following errors:', @($ErrorMessages), '', 'Template is invalid.'
     }
@@ -238,60 +231,42 @@ else {
 
     $ErrorActionPreference = 'Continue' # Switch to Continue" so multiple errors can be formatted and output
     
-    switch($deploymentScope){
+    switch ($deploymentScope) {
         "resourceGroup" {
             New-AzResourceGroupDeployment -Name $DeploymentName `
-            -ResourceGroupName $ResourceGroupName `
-            @TemplateArgs `
-            @OptionalParameters `
-            -Force -Verbose `
-            -ErrorVariable ErrorMessages
+                -ResourceGroupName $ResourceGroupName `
+                @TemplateArgs `
+                @OptionalParameters `
+                -Force -Verbose `
+                -ErrorVariable ErrorMessages
         }
         "Subscription" {
             New-AzDeployment -Name $DeploymentName `
-            -Location $Location `
-            @TemplateArgs `
-            @OptionalParameters `
-            -Verbose `
-            -ErrorVariable ErrorMessages
+                -Location $Location `
+                @TemplateArgs `
+                @OptionalParameters `
+                -Verbose `
+                -ErrorVariable ErrorMessages
         }
         "managementGroup" {           
-             New-AzManagementGroupDeployment -Name $DeploymentName `
-            -ManagementGroupId $managementGroupId 
+            New-AzManagementGroupDeployment -Name $DeploymentName `
+                -ManagementGroupId $managementGroupId 
             -Location $Location `
-            @TemplateArgs `
-            @OptionalParameters `
-            -Verbose `
-            -ErrorVariable ErrorMessages
+                @TemplateArgs `
+                @OptionalParameters `
+                -Verbose `
+                -ErrorVariable ErrorMessages
         }
         "tenant" {
             New-AzTenantDeployment -Name $DeploymentName `
-            -Location $Location `
-            @TemplateArgs `
-            @OptionalParameters `
-            -Verbose `
-            -ErrorVariable ErrorMessages
+                -Location $Location `
+                @TemplateArgs `
+                @OptionalParameters `
+                -Verbose `
+                -ErrorVariable ErrorMessages
         }
     }
     
-    <#if ($deploymentScope -eq "Subscription") {
-        #subscription scoped deployment
-        New-AzDeployment -Name $DeploymentName `
-            -Location $Location `
-            @TemplateArgs `
-            @OptionalParameters `
-            -Verbose `
-            -ErrorVariable ErrorMessages
-    }
-    else {
-        New-AzResourceGroupDeployment -Name $DeploymentName `
-            -ResourceGroupName $ResourceGroupName `
-            @TemplateArgs `
-            @OptionalParameters `
-            -Force -Verbose `
-            -ErrorVariable ErrorMessages
-    }#>
-
     $ErrorActionPreference = 'Stop' 
     if ($ErrorMessages) {
         Write-Output '', 'Template deployment returned the following errors:', '', @(@($ErrorMessages) | ForEach-Object { $_.Exception.Message })
