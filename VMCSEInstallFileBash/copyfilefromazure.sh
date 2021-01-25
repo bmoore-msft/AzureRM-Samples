@@ -16,7 +16,7 @@ while getopts "a:t:p:f:" opt; do
     esac
 done
 
-fileUrl="$artifactsLocation/$pathToFile/$fileToInstall$token"
+fileUrl="$artifactsLocation/$pathToFile/$fileToInstall?${token#\?}"
 stagingDir="/staging"
 
 mkdir -v "$stagingDir"
