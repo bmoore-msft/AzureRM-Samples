@@ -1,0 +1,119 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "subscriptionAlias": {
+      "type": "string",
+      "metadata": {
+        "description": "Alias name for the new subscription"
+      }
+    },
+    "billingAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Billing account name for the new subscription"
+      }
+    },
+    "billingProfileName": {
+      "type": "string",
+      "metadata": {
+        "description": "Billing profile under the billing account"
+      }
+    },
+    "invoiceSectionName": {
+      "type": "string",
+      "metadata": {
+        "description": "Invoice section under the billing profile"
+      }
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the resourceGroup to create in the new subscription"
+      }
+    }
+  },
+  "resources": [
+    {
+      "scope": "/",
+      "name": "[parameters('subscriptionAlias')]",
+      "type": "Microsoft.Subscription/aliases",
+      "apiVersion": "2020-09-01",
+      "properties": {
+        "workload": "Production", // Production vs DevTest
+        "displayName": "[parameters('subscriptionAlias')]",
+        "billingScope": "[tenantResourceId('Microsoft.Billing/billingAccounts/billingProfiles/invoiceSections', parameters('billingAccountName'), parameters('billingProfileName'), parameters('invoiceSectionName'))]"
+        //"subscriptionId": "e3a2d06a-a824-43ce-8e7d-287f298937a1" // this is only used for assigning an alais to an existing subscription
+      }
+    },
+    {
+      "name": "[concat('createResourceGroupOuter-', deployment().location)]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "location": "[deployment().location]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "subscriptionId": {
+            "value": "[replace(reference(tenantResourceId('Microsoft.Subscription/aliases', parameters('subscriptionAlias')), '2020-09-01').subscriptionId, 'subscriptions/', '')]"
+          },
+          "resourceGroupName": {
+            "value": "[parameters('resourceGroupName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/managementGroupDeploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "subscriptionId": {
+              "type": "string"
+            },
+            "resourceGroupName": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "name": "[concat('createResourceGroupInner-', deployment().location)]",
+              "type": "Microsoft.Resources/deployments",
+              "subscriptionId": "[parameters('subscriptionId')]",
+              "apiVersion": "2020-10-01",
+              "location": "[deployment().location]",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "resourceGroupName": {
+                    "value": "[parameters('resourceGroupName')]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/subscriptionDeploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "parameters": {
+                    "resourceGroupName": {
+                      "type": "string"
+                    }
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.Resources/resourceGroups",
+                      "apiVersion": "2020-10-01",
+                      "location": "[deployment().location]",
+                      "name": "[parameters('resourceGroupName')]"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

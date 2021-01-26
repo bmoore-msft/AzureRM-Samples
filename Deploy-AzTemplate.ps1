@@ -6,7 +6,7 @@ Param(
     [string] [Parameter(Mandatory = $true)] $ArtifactStagingDirectory,
     [string] [Parameter(Mandatory = $true)][alias("ResourceGroupLocation")] $Location,
     [string] $ResourceGroupName = (Split-Path $ArtifactStagingDirectory -Leaf),
-    [switch] $UploadArtifacts,
+    [switch] [alias("Stage")]$UploadArtifacts,
     [string] $StorageAccountName,
     [string] $StorageContainerName = $ResourceGroupName.ToLowerInvariant() + '-stageartifacts',
     [string] $TemplateFile = $ArtifactStagingDirectory + '\mainTemplate.json',
@@ -17,6 +17,7 @@ Param(
     [string] $DebugOptions = "None",
     [string] $Mode = "Incremental",
     [string] $DeploymentName = ((Split-Path $TemplateFile -LeafBase) + '-' + ((Get-Date).ToUniversalTime()).ToString('MMdd-HHmm')),
+    [string] $ManagementGroupId,
     [switch] $Dev
 )
 
@@ -84,10 +85,12 @@ switch -Wildcard ($TemplateSchema) {
 
 Write-Host "Running a $deploymentScope scoped deployment..."
 
-$ArtifactsLocationParameter = $TemplateJson | Select-Object -expand 'parameters' -ErrorAction Ignore | Select-Object -Expand '_artifactsLocation' -ErrorAction Ignore
+$ArtifactsLocationName = '_artifactsLocation'
+$ArtifactsLocationSasTokenName = '_artifactsLocationSasToken'
+$ArtifactsLocationParameter = $TemplateJson | Select-Object -expand 'parameters' -ErrorAction Ignore | Select-Object -Expand $ArtifactsLocationName -ErrorAction Ignore
 $useAbsolutePathStaging = $($ArtifactsLocationParameter -ne $null)
 
-#if the switch is set or the standard parameter is present in the template, upload all artifacts
+# if the switch is set or the standard parameter is present in the template, upload all artifacts
 if ($UploadArtifacts -Or $useAbsolutePathStaging) {
     # Convert relative paths to absolute paths if needed
     $ArtifactStagingDirectory = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, $ArtifactStagingDirectory))
@@ -104,8 +107,6 @@ if ($UploadArtifacts -Or $useAbsolutePathStaging) {
         $JsonParameters = @{ }
     }
     
-    $ArtifactsLocationName = '_artifactsLocation'
-    $ArtifactsLocationSasTokenName = '_artifactsLocationSasToken'
     # if using _artifacts* parameters, add them to the optional params and get the value from the param file (if any)
     if ($useAbsolutePathStaging) {
         $OptionalParameters[$ArtifactsLocationName] = $JsonParameters | Select-Object -Expand $ArtifactsLocationName -ErrorAction Ignore | Select-Object -Expand 'value' -ErrorAction Ignore
@@ -131,7 +132,7 @@ if ($UploadArtifacts -Or $useAbsolutePathStaging) {
     # Create the storage account if it doesn't already exist
     if ($StorageAccount -eq $null) {
         $StorageResourceGroupName = 'ARM_Deploy_Staging'
-        if ((Get-AzResourceGroup -Name $StorageResourceGroupName -Location $Location -Verbose -ErrorAction SilentlyContinue) -eq $null) {
+        if ((Get-AzResourceGroup -Name $StorageResourceGroupName -Verbose -ErrorAction SilentlyContinue) -eq $null) {
             New-AzResourceGroup -Name $StorageResourceGroupName -Location $Location -Verbose -Force -ErrorAction Stop
         }
         $StorageAccount = New-AzStorageAccount -StorageAccountName $StorageAccountName -Type 'Standard_LRS' -ResourceGroupName $StorageResourceGroupName -Location "$Location"
@@ -147,7 +148,7 @@ if ($UploadArtifacts -Or $useAbsolutePathStaging) {
         #if the defaultValue for _artifactsLocation is using the template location, use the defaultValue, otherwise set it to the staging location
         $defaultValue = $ArtifactsLocationParameter | Select-Object -Expand 'defaultValue' -ErrorAction Ignore
         if ($defaultValue -like '*deployment().properties.templateLink.uri*') {
-            $OptionalParameters.Remove($ArtifactsLocationName)
+            $OptionalParameters.Remove($ArtifactsLocationName) # just use the defaultValue if it's using the template language function
         }
         else {
             $OptionalParameters[$ArtifactsLocationName] = $ArtifactStagingLocation   
@@ -170,7 +171,6 @@ if ($UploadArtifacts -Or $useAbsolutePathStaging) {
     # Generate a 4 hour SAS token for the artifacts location if one was not provided in the parameters file
     # first check to see if we need a sasToken (if it was not already provided in the param file or we're using relativePath)
     if ($useAbsolutePathStaging -or $OptionalParameters[$ArtifactsLocationSasTokenName] -eq $null) {
-        #$OptionalParameters[$ArtifactsLocationSasTokenName] = (New-AzStorageContainerSASToken -Container $StorageContainerName -Context $StorageAccount.Context -Permission r -ExpiryTime (Get-Date).AddHours(4))
         $sasToken = (New-AzStorageContainerSASToken -Container $StorageContainerName -Context $StorageAccount.Context -Permission r -ExpiryTime (Get-Date).AddHours(4))
     }
 
@@ -250,8 +250,8 @@ else {
         }
         "managementGroup" {           
             New-AzManagementGroupDeployment -Name $DeploymentName `
-                -ManagementGroupId $managementGroupId 
-            -Location $Location `
+                -ManagementGroupId $managementGroupId `
+                -Location $Location `
                 @TemplateArgs `
                 @OptionalParameters `
                 -Verbose `
