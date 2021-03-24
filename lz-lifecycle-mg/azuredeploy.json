@@ -117,6 +117,26 @@
                     }
                 }
             }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "BYOT",
+            "location": "[deployment().location]",
+            "dependsOn": [
+                "managementGroupLoop"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "contentVersion": "1.0.0.0",
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('BYOT/azuredeploy.json', parameters('_artifactsLocationSasToken')))]"
+                },
+                "parametersLink": {
+                    "contentVersion": "1.0.0.0",
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('BYOT/azuredeploy.parameters.json', parameters('_artifactsLocationSasToken')))]"
+                }
+            }
         }
     ],
     "outputs": {
