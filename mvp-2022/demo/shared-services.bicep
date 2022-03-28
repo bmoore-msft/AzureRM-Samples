@@ -3,7 +3,7 @@ targetScope = 'subscription'
 param sqlAdminUsername string = 'bmoore'
 
 param keyVaultResourceGroup string = 'VaultsGroup'
-param keyVaultName string = 'armdemovault' // 'bmoore-westus' // 'bmoore-demo'
+param keyVaultName string = 'armdemovault'
 param keyVaultSecretName string = 'adminPassword'
 
 param location string = deployment().location
@@ -24,7 +24,7 @@ resource webResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 }
 
 module sqlDeployment 'modules/shared-sql.bicep' = {
-  scope: resourceGroup(sqlResourceGroup.name)
+  scope: sqlResourceGroup
   name: 'sqlDeployment'
   params: {
     sqlAdminUsername: sqlAdminUsername
@@ -34,7 +34,7 @@ module sqlDeployment 'modules/shared-sql.bicep' = {
 }
 
 module webDeployment 'modules/shared-web.bicep' = {
-  scope: resourceGroup(webResourceGroup.name)
+  scope: webResourceGroup
   name: 'webDeployment'
   params: {
     location: location

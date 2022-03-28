@@ -4,14 +4,22 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.4.1272.37030",
-      "templateHash": "2597462340149379785"
+      "version": "0.4.1318.3566",
+      "templateHash": "5561029497096961304"
     }
   },
   "parameters": {
     "location": {
       "type": "string",
       "defaultValue": "[deployment().location]"
+    },
+    "sharedSqlResourceGroup": {
+      "type": "string",
+      "defaultValue": "shared-sql"
+    },
+    "sharedWebResourceGroup": {
+      "type": "string",
+      "defaultValue": "shared-web"
     }
   },
   "resources": [
@@ -19,7 +27,7 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
       "name": "widgetSqlDeployment",
-      "resourceGroup": "shared-sql",
+      "resourceGroup": "[parameters('sharedSqlResourceGroup')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -36,8 +44,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.4.1272.37030",
-              "templateHash": "4935025217167005119"
+              "version": "0.4.1318.3566",
+              "templateHash": "15207346888769923312"
             }
           },
           "parameters": {
@@ -65,7 +73,7 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
       "name": "webDeployment",
-      "resourceGroup": "shared-web",
+      "resourceGroup": "[parameters('sharedWebResourceGroup')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -82,8 +90,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.4.1272.37030",
-              "templateHash": "7559139620689053016"
+              "version": "0.4.1318.3566",
+              "templateHash": "2457624001648161704"
             }
           },
           "parameters": {
