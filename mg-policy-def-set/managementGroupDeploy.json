@@ -1,0 +1,160 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "managementGroupName": {
+            "type": "string"
+        },
+        "managementGroupDisplayName": {
+            "type": "string"
+        },
+        "parentManagementGroupName": {
+            "type": "string"
+        },
+        "policyDefinitions": {
+            "type": "array"
+        },
+        "policySetDefinition": {
+            "type": "object"
+        }
+    },
+    "resources": [
+        {
+            "name": "createMG",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "location": "[deployment().location]",
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "managementGroupName": {
+                        "value": "[parameters('managementGroupName')]"
+                    },
+                    "managementGroupDisplayName": {
+                        "value": "[parameters('managementGroupDisplayName')]"
+                    },
+                    "parentManagementGroupName": {
+                        "value": "[parameters('parentManagementGroupName')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "managementGroupName": {
+                            "type": "string"
+                        },
+                        "managementGroupDisplayName": {
+                            "type": "string"
+                        },
+                        "parentManagementGroupName": {
+                            "type": "string"
+                        }
+                    },
+                    "resources": [
+                        {
+                            "scope": "/",
+                            "type": "Microsoft.Management/managementGroups",
+                            "apiVersion": "2020-05-01",
+                            "name": "[parameters('managementGroupName')]",
+                            "properties": {
+                                "displayName": "[parameters('managementGroupDisplayName')]",
+                                "details": {
+                                    "parent": {
+                                        "id": "[tenantResourceId('Microsoft.Management/managementGroups', parameters('parentmanagementGroupName'))]"
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "outputs": {
+                        "managementGroupName": {  // this short-circuits template validation when the mg does not exists - simply passing the param from the main deployment is not sufficient
+                            "type": "string",
+                            "value": "[parameters('managementGroupName')]"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "scope": "[concat('Microsoft.Management/managementGroups/', parameters('managementGroupName'))]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "policyDefs",
+            "location": "[deployment().location]",
+            "dependsOn": [
+               "createMG"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "managementGroupName": {
+                        "value": "[reference('createMG').outputs.managementGroupName.value]" // this short-circuits template validation when the mg does not exists - simply passing the param from the main deployment is not sufficient
+                    },
+                    "policyDefinitions": {
+                        "value": "[parameters('policyDefinitions')]"
+                    },
+                    "policySetDefinition": {
+                        "value": "[parameters('policySetDefinition')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "managementGroupName": {
+                            "type": "string"
+                        },
+                        "policyDefinitions": {
+                            "type": "array"
+                        },
+                        "policySetDefinition": {
+                            "type": "object"
+                        }
+                    },
+                    "resources": [
+                        {
+                            "type": "Microsoft.Authorization/policyDefinitions",
+                            "apiVersion": "2021-06-01",
+                            "copy": {
+                                "name": "policyDefLoop",
+                                "count": "[length(parameters('policyDefinitions'))]"
+                            },
+                            "name": "[parameters('policyDefinitions')[copyIndex()].name]",
+                            "properties": "[parameters('policyDefinitions')[copyIndex()].properties]"
+                        },
+                        {
+                            "type": "Microsoft.Authorization/policySetDefinitions",
+                            "apiVersion": "2021-06-01",
+                            "name": "[parameters('policySetDefinition').name]",
+                            "dependsOn": [
+                                "policyDefLoop"
+                            ],
+                            "properties": {
+                                "Description": "[parameters('policySetDefinition').Description]",
+                                "DisplayName": "[parameters('policySetDefinition').displayName]",
+                                "copy": [
+                                    {
+                                        "name": "PolicyDefinitions",
+                                        "count": "[length(parameters('policySetDefinition').policyDefinitions)]",
+                                        "input": {
+                                            "policyDefinitionId": "[extensionResourceId(tenantResourceId('Microsoft.Management/managementGroups', parameters('managementGroupName')), 'Microsoft.Authorization/policyDefinitions', parameters('policySetDefinition').policyDefinitions[copyIndex('PolicyDefinitions')].policyDefinitionId)]",
+                                            "parameters": "[parameters('policySetDefinition').parameters]"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "outputs": {}
+                }
+            }
+        }
+    ]
+}

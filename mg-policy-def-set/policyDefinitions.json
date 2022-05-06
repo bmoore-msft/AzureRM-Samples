@@ -1,0 +1,128 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "managementGroupName": {
+        "value": "scratch-child" 
+    },
+    "managementGroupDisplayName": {
+        "value": "scratch child test" 
+    },
+    "parentManagementGroupName": {
+        "value": "scratch" 
+    },
+    "policyDefinitions": {
+      "value": [
+        {
+          "properties": {
+            "Description": "This policy restrict creation of Key Vaults with IP Firewall exposed to all public endpoints",
+            "DisplayName": "Deny-PublicEndpoint-KeyVault",
+            "Mode": "All",
+            "Parameters": null,
+            "PolicyRule": {
+              "if": {
+                "allOf": [
+                  {
+                    "field": "type",
+                    "equals": "Microsoft.KeyVault/vaults"
+                  },
+                  {
+                    "field": "Microsoft.KeyVault/vaults/networkAcls.defaultAction",
+                    "notequals": "Deny"
+                  }
+                ]
+              },
+              "then": {
+                "effect": "Deny"
+              }
+            },
+            "policyType": "Custom",
+            "metadata": {}
+          },
+          "name": "Deny-PublicEndpoint-KeyVault"
+        },
+        {
+          "properties": {
+            "Description": "This policy restrict creation of cosmos db accounts with exposed public endpoints",
+            "DisplayName": "Deny-PublicEndpoint-CosmosDB",
+            "Mode": "All",
+            "Parameters": null,
+            "PolicyRule": {
+              "if": {
+                "allOf": [
+                  {
+                    "field": "type",
+                    "equals": "Microsoft.DocumentDB/databaseAccounts"
+                  },
+                  {
+                    "field": "Microsoft.DocumentDB/databaseAccounts/publicNetworkAccess",
+                    "notequals": "Disabled"
+                  }
+                ]
+              },
+              "then": {
+                "effect": "Deny"
+              }
+            },
+            "policyType": "Custom",
+            "metadata": {}
+          },
+          "name": "Deny-PublicEndpoint-CosmosDB"
+        },
+        {
+          "properties": {
+            "Description": "This policy restricts creation of non-private AKS clusters",
+            "DisplayName": "Deny-PublicEndpoint-Aks",
+            "Mode": "All",
+            "Parameters": null,
+            "PolicyRule": {
+              "if": {
+                "allOf": [
+                  {
+                    "field": "type",
+                    "equals": "Microsoft.ContainerService/managedClusters"
+                  },
+                  {
+                    "field": "Microsoft.ContainerService/managedClusters/apiServerAccessProfile.enablePrivateCluster",
+                    "notequals": "true"
+                  }
+                ]
+              },
+              "then": {
+                "effect": "Deny"
+              }
+            },
+            "policyType": "Custom",
+            "metadata": {}
+          },
+          "name": "Deny-PublicEndpoint-Aks"
+        }
+      ]
+    },
+    "policySetDefinition": {
+      "value": {
+        "name": "sampleDefinitionSet",
+        "Description": null,
+        "DisplayName": "Sample definitionSet",
+        "Parameters": {},
+        "PolicyDefinitionGroups": null,
+        "PolicyDefinitions": [
+          {
+            
+            "policyDefinitionId": "Deny-PublicEndpoint-CosmosDB",
+            "parameters": {}
+          },
+          {
+            
+            "policyDefinitionId": "Deny-PublicEndpoint-KeyVault",
+            "parameters": {}
+          },
+          {
+            "policyDefinitionId": "Deny-PublicEndpoint-Aks",
+            "parameters": {}
+          }
+        ]
+      }
+    }
+  }
+}
