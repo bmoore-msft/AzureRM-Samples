@@ -8,9 +8,6 @@
     "managementGroupDisplayName": {
         "value": "scratch child test" 
     },
-    "parentManagementGroupName": {
-        "value": "scratch" 
-    },
     "policyDefinitions": {
       "value": [
         {

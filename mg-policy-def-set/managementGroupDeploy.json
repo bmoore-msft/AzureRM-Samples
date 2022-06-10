@@ -8,19 +8,24 @@
         "managementGroupDisplayName": {
             "type": "string"
         },
-        "parentManagementGroupName": {
-            "type": "string"
-        },
         "policyDefinitions": {
             "type": "array"
         },
         "policySetDefinition": {
             "type": "object"
+        },
+        "roleDefinitionId": {
+            "type": "string",
+            "defaultValue": "9b7fa17d-e63e-47b0-bb0a-15c516ac86ec"
         }
+    },
+    "variables": {
+        "mgDeploymentName": "[concat('createMG-', deployment().location)]",
+        "policyDeploymentName": "[concat('policyDefs-', deployment().location)]"
     },
     "resources": [
         {
-            "name": "createMG",
+            "name": "[variables('mgDeploymentName')]",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
             "location": "[deployment().location]",
@@ -37,7 +42,7 @@
                         "value": "[parameters('managementGroupDisplayName')]"
                     },
                     "parentManagementGroupName": {
-                        "value": "[parameters('parentManagementGroupName')]"
+                        "value": "[managementGroup().name]"
                     }
                 },
                 "template": {
@@ -71,7 +76,7 @@
                         }
                     ],
                     "outputs": {
-                        "managementGroupName": {  // this short-circuits template validation when the mg does not exists - simply passing the param from the main deployment is not sufficient
+                        "managementGroupName": { // this short-circuits template validation when the mg does not exists - simply passing the param from the main deployment is not sufficient
                             "type": "string",
                             "value": "[parameters('managementGroupName')]"
                         }
@@ -83,10 +88,10 @@
             "scope": "[concat('Microsoft.Management/managementGroups/', parameters('managementGroupName'))]",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
-            "name": "policyDefs",
+            "name": "[variables('policyDeploymentName')]",
             "location": "[deployment().location]",
             "dependsOn": [
-               "createMG"
+                "[resourceId('Microsoft.Resources/deployments', variables('mgDeploymentName'))]"
             ],
             "properties": {
                 "expressionEvaluationOptions": {
@@ -95,7 +100,7 @@
                 "mode": "Incremental",
                 "parameters": {
                     "managementGroupName": {
-                        "value": "[reference('createMG').outputs.managementGroupName.value]" // this short-circuits template validation when the mg does not exists - simply passing the param from the main deployment is not sufficient
+                        "value": "[reference(variables('mgDeploymentName')).outputs.managementGroupName.value]" // this short-circuits template validation when the mg does not exists - simply passing the param from the main deployment is not sufficient
                     },
                     "policyDefinitions": {
                         "value": "[parameters('policyDefinitions')]"
@@ -149,6 +154,80 @@
                                         }
                                     }
                                 ]
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Authorization/policyassignments",
+                            "apiVersion": "2021-06-01",
+                            "name": "[parameters('policySetDefinition').name]",
+                            "location": "[deployment().location]",
+                            "identity": {
+                                "type": "SystemAssigned"
+                            },
+                            "dependsOn": [
+                                "[extensionResourceId(tenantResourceId('Microsoft.Management/managementGroups', parameters('managementGroupName')), 'Microsoft.Authorization/policySetDefinitions', parameters('policySetDefinition').name)]"
+                            ],
+                            "properties": {
+                                "displayName": "[concat(parameters('policySetDefinition').name, ' - Assignment')]",
+                                "policyDefinitionId": "[extensionResourceId(tenantResourceId('Microsoft.Management/managementGroups', parameters('managementGroupName')), 'Microsoft.Authorization/policySetDefinitions', parameters('policySetDefinition').name)]",
+                                "enforcementMode": "Default"
+                            }
+                        }
+                    ],
+                    "outputs": {
+                        "principalId": {
+                            "type": "string",
+                            "value": "[reference(extensionResourceId(tenantResourceId('Microsoft.Management/managementGroups', parameters('managementGroupName')) ,'Microsoft.Authorization/policyassignments', parameters('policySetDefinition').name), '2021-06-01', 'Full').identity.principalId]"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "scope": "[concat('Microsoft.Management/managementGroups/', parameters('managementGroupName'))]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "[concat('roleAssignment-', deployment().location)]",
+            "location": "[deployment().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', variables('policyDeploymentName'))]"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "principalId": {
+                        "value": "[reference(variables('policyDeploymentName')).outputs.principalId.value]"
+                    },
+                    "roleDefinitionId": {
+                        "value": "[parameters('roleDefinitionId')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "principalId": {
+                            "type": "string"
+                        },
+                        "roleDefinitionId": {
+                            "type": "string"
+                        }
+                    },
+                    "variables": {
+                        "roleAssignmentName": "[guid(parameters('principalId'), managementGroup().id, parameters('roleDefinitionId'))]"
+                    },
+                    "resources": [
+                        {
+                            "type": "Microsoft.Authorization/roleAssignments",
+                            "apiVersion": "2020-10-01-preview",
+                            "name": "[variables('roleAssignmentName')]",
+                            "properties": {
+                                "principalType": "ServicePrincipal",
+                                "principalId": "[parameters('principalId')]",
+                                "roleDefinitionId": "[tenantResourceId('Microsoft.Authorization/roleDefinitions', parameters('roleDefinitionId'))]"
                             }
                         }
                     ],
