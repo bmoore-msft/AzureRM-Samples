@@ -1,0 +1,711 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "managementGroupName": {
+            "type": "String"
+        },
+        "managementGroupDisplayName": {
+            "type": "String"
+        },
+        "policyEffect": {
+            "defaultValue": "Audit",
+            "type": "String"
+        },
+        "enablePolicy": {
+            "defaultValue": true,
+            "type": "Bool"
+        },
+        "roleDefinitionId": {
+            "defaultValue": "9b7fa17d-e63e-47b0-bb0a-15c516ac86ec",
+            "type": "String"
+        }
+    },
+    "variables": {
+        "createMgDeploymentName": "[concat(deployment().name, '-create-mg')]",
+        "benchmarkDeploymentName": "[concat(deployment().name, '-benchmark')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "[variables('createMgDeploymentName')]",
+            "location": "[deployment().location]",
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "Inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "managementGroupName": {
+                        "value": "[parameters('managementGroupName')]"
+                    },
+                    "managementGroupDisplayName": {
+                        "value": "[parameters('managementGroupDisplayName')]"
+                    },
+                    "parentManagementGroupName": {
+                        "value": "[managementGroup().name]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "managementGroupName": {
+                            "type": "string"
+                        },
+                        "managementGroupDisplayName": {
+                            "type": "string"
+                        },
+                        "parentManagementGroupName": {
+                            "type": "string"
+                        }
+                    },
+                    "resources": [
+                        {
+                            "scope": "/",
+                            "type": "Microsoft.Management/managementGroups",
+                            "apiVersion": "2021-04-01",
+                            "name": "[parameters('managementGroupName')]",
+                            "properties": {
+                                "displayName": "[parameters('managementGroupDisplayName')]",
+                                "details": {
+                                    "parent": {
+                                        "id": "[tenantResourceId('Microsoft.Management/managementGroups', parameters('parentmanagementGroupName'))]"
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "outputs": {
+                        "managementGroupName": {
+                            "type": "string",
+                            "value": "[parameters('managementGroupName')]"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "scope": "[concat('/providers/Microsoft.Management/managementGroups/', parameters('managementGroupName'))]",
+            "condition": "[parameters('enablePolicy')]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "[variables('benchmarkDeploymentName')]",
+            "location": "[deployment().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', variables('createMgDeploymentName'))]"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "Inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "policyEffect": {
+                        "value": "[parameters('policyEffect')]"
+                    },
+                    "managementGroupName": {
+                        "value": "[reference(variables('createMgDeploymentName')).outputs.managementGroupName.value]"
+                    },
+                    "roleDefinitionId": {
+                        "value": "[parameters('roleDefinitionId')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "policyEffect": {
+                            "type": "string"
+                        },
+                        "managementGroupName": {
+                            "type": "string"
+                        },
+                        "roleDefinitionId": {
+                            "type": "string"
+                        }
+                    },
+                    "variables": {
+                        "benchmarkPolicySetDefName": "AzSecurityBenchmarkSetDef",
+                        "benchmarkPolicyAssignmentName": "AzSecurityBenchmark"
+
+                    },
+                    "resources": [
+                        {                            
+                            "type": "Microsoft.Authorization/policySetDefinitions",
+                            "apiVersion": "2021-06-01",
+                            "name": "[variables('benchmarkPolicySetDefName')]",
+                            "properties": {
+                                "displayName": "[concat('Azure Security Benchmark v3 (', parameters('policyEffect') , ')')]",
+                                "description": "Azure Security Benchmark v3 as defined with management group create via Azure Portal extension (feature.fortknox=true)",
+                                "policyDefinitionGroups": [
+                                    {
+                                        "name": "ASB_Enforce_v1.0_AM-P1",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_AM-P1"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_BR-P1",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_BR-P1"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_BR-P2",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_BR-P2"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_DP-P1",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_DP-P1"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_DP-P2",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_DP-P2"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_DP-P3",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_DP-P3"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_DP-P4",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_DP-P4"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_ES-P1",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_ES-P1"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_IM-P1",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_IM-P1"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_LT-P1",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_LT-P1"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_LT-P2",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_LT-P2"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_LT-P3",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_LT-P3"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_NS-P1",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_NS-P1"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_NS-P2",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_NS-P2"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_NS-P3",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_NS-P3"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_NS-P4",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_NS-P4"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_PA-P1",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_PA-P1"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_PA-P2",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_PA-P2"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_PV-P1",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_PV-P1"
+                                    },
+                                    {
+                                        "name": "ASB_Enforce_v1.0_PV-P2",
+                                        "additionalMetadataId": "/providers/Microsoft.PolicyInsights/policyMetadata/ASB_Enforce_v1.0_PV-P2"
+                                    }
+                                ],
+                                "parameters": {
+                                    "effect": {
+                                        "type": "string",
+                                        "metadata": {
+                                            "displayName": "Effect",
+                                            "description": "Effect for all policies in the initiative. The effect determines what happens when the policy rule is evaluated to match; for more information about effects, visit https://aka.ms/policyeffects"
+                                        },
+                                        "allowedValues": [
+                                            "Audit",
+                                            "Deny",
+                                            "Disabled"
+                                        ],
+                                        "defaultValue": "[parameters('policyEffect')]"
+                                    }
+                                },
+                                "policyDefinitions": [
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/22bee202-a82f-4305-9a2a-6d7f44d4dedb",
+                                        "policyDefinitionReferenceId": "22bee202-a82f-4305-9a2a-6d7f44d4dedb",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_DP-P3"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/32e6bbec-16b6-44c2-be37-c5b672d103cf",
+                                        "policyDefinitionReferenceId": "32e6bbec-16b6-44c2-be37-c5b672d103cf",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_DP-P3"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/6f68b69f-05fe-49cd-b361-777ee9ca7e35",
+                                        "policyDefinitionReferenceId": "6f68b69f-05fe-49cd-b361-777ee9ca7e35",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_IM-P1"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/8af8f826-edcb-4178-b35f-851ea6fea615",
+                                        "policyDefinitionReferenceId": "8af8f826-edcb-4178-b35f-851ea6fea615",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/0fdf0491-d080-4575-b627-ad0e843cba0f",
+                                        "policyDefinitionReferenceId": "0fdf0491-d080-4575-b627-ad0e843cba0f",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/cddd188c-4b82-4c48-a19d-ddf74ee66a01",
+                                        "policyDefinitionReferenceId": "cddd188c-4b82-4c48-a19d-ddf74ee66a01",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[if(equals(parameters('policyEffect'), 'Deny'), 'Audit', 'Audit')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/fc4d8e41-e223-45ea-9bf5-eada37891d87",
+                                        "policyDefinitionReferenceId": "fc4d8e41-e223-45ea-9bf5-eada37891d87",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_DP-P4"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/17k78e20-9358-41c9-923c-fb736d382a12",
+                                        "policyDefinitionReferenceId": "17k78e20-9358-41c9-923c-fb736d382a12",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[if(equals(parameters('policyEffect'), 'Deny'), 'AuditIfNotExists', 'AuditIfNotExists')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_DP-P4"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/abda6d70-9778-44e7-84a8-06713e6db027",
+                                        "policyDefinitionReferenceId": "abda6d70-9778-44e7-84a8-06713e6db027",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_IM-P1"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/199d5677-e4d9-4264-9465-efe1839c06bd",
+                                        "policyDefinitionReferenceId": "199d5677-e4d9-4264-9465-efe1839c06bd",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_IM-P1"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/8c6a50c6-9ffd-4ae7-986f-5fa6111f9a54",
+                                        "policyDefinitionReferenceId": "8c6a50c6-9ffd-4ae7-986f-5fa6111f9a54",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_IM-P1"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/470baccb-7e51-4549-8b1a-3e5be069f663",
+                                        "policyDefinitionReferenceId": "470baccb-7e51-4549-8b1a-3e5be069f663",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/55615ac9-af46-4a59-874e-391cc3dfb490",
+                                        "policyDefinitionReferenceId": "55615ac9-af46-4a59-874e-391cc3dfb490",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/0725b4dd-7e76-479c-a735-68e7ee23d5ca",
+                                        "policyDefinitionReferenceId": "0725b4dd-7e76-479c-a735-68e7ee23d5ca",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/e8eef0a8-67cf-4eb4-9386-14b0e78733d4",
+                                        "policyDefinitionReferenceId": "e8eef0a8-67cf-4eb4-9386-14b0e78733d4",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[if(equals(parameters('policyEffect'), 'Deny'), 'Audit', 'Audit')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/58440f8a-10c5-4151-bdce-dfbaad4a20b7",
+                                        "policyDefinitionReferenceId": "58440f8a-10c5-4151-bdce-dfbaad4a20b7",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[if(equals(parameters('policyEffect'), 'Deny'), 'Audit', 'Audit')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/6edd7eda-6dd8-40f7-810d-67160c639cd9",
+                                        "policyDefinitionReferenceId": "6edd7eda-6dd8-40f7-810d-67160c639cd9",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[if(equals(parameters('policyEffect'), 'Deny'), 'AuditIfNotExists', 'AuditIfNotExists')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/404c3081-a854-4457-ae30-26a93ef643f9",
+                                        "policyDefinitionReferenceId": "404c3081-a854-4457-ae30-26a93ef643f9",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_DP-P3"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/1760f9d4-7206-436e-a28f-d9f3a5c8a227",
+                                        "policyDefinitionReferenceId": "1760f9d4-7206-436e-a28f-d9f3a5c8a227",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_DP-P4"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/f4b53539-8df9-40e4-86c6-6b607703bd4e",
+                                        "policyDefinitionReferenceId": "f4b53539-8df9-40e4-86c6-6b607703bd4e",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_DP-P4"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/5450f5bd-9c72-4390-a9c4-a7aba4edfdd2",
+                                        "policyDefinitionReferenceId": "5450f5bd-9c72-4390-a9c4-a7aba4edfdd2",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_IM-P1"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/e15effd4-2278-4c65-a0da-4d6f6d1890e2",
+                                        "policyDefinitionReferenceId": "e15effd4-2278-4c65-a0da-4d6f6d1890e2",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_IM-P1"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/74c5a0ae-5e48-4738-b093-65e23a060488",
+                                        "policyDefinitionReferenceId": "74c5a0ae-5e48-4738-b093-65e23a060488",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/1b8ca024-1d5c-4dec-8995-b1a932b41780",
+                                        "policyDefinitionReferenceId": "1b8ca024-1d5c-4dec-8995-b1a932b41780",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/4fa4b6c0-31ca-4c0d-b10d-24b96f62a751",
+                                        "policyDefinitionReferenceId": "4fa4b6c0-31ca-4c0d-b10d-24b96f62a751",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/1bc02227-0cb6-4e11-8f53-eb0b22eab7e8",
+                                        "policyDefinitionReferenceId": "1bc02227-0cb6-4e11-8f53-eb0b22eab7e8",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/7698e800-9299-47a6-b3b6-5a0fee576eed",
+                                        "policyDefinitionReferenceId": "7698e800-9299-47a6-b3b6-5a0fee576eed",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[if(equals(parameters('policyEffect'), 'Deny'), 'Audit', 'Audit')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/5f0bc445-3935-4915-9981-011aa2b46147",
+                                        "policyDefinitionReferenceId": "5f0bc445-3935-4915-9981-011aa2b46147",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/0fc55270-f8bf-4feb-b7b8-5e7e7eacc6a6",
+                                        "policyDefinitionReferenceId": "0fc55270-f8bf-4feb-b7b8-5e7e7eacc6a6",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[if(equals(parameters('policyEffect'), 'Deny'), 'AuditIfNotExists', 'AuditIfNotExists')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/71ef260a-8f18-47b7-abcb-62d0673d94dc",
+                                        "policyDefinitionReferenceId": "71ef260a-8f18-47b7-abcb-62d0673d94dc",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_IM-P1"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/86a912f6-9a06-4e26-b447-11b16ba8659f",
+                                        "policyDefinitionReferenceId": "86a912f6-9a06-4e26-b447-11b16ba8659f",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[if(equals(parameters('policyEffect'), 'Deny'), 'DeployIfNotExists', if(equals(parameters('policyEffect'), 'Audit'), 'Disabled', 'DeployIfNotExists'))]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_DP-P4"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/dc921057-6b28-4fbe-9b83-f7bec05db6c2",
+                                        "policyDefinitionReferenceId": "dc921057-6b28-4fbe-9b83-f7bec05db6c2",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_IM-P1"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/797b37f7-06b8-444c-b1ad-fc62867f335a",
+                                        "policyDefinitionReferenceId": "797b37f7-06b8-444c-b1ad-fc62867f335a",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/6c53d030-cc64-46f0-906d-2bc061cd1334",
+                                        "policyDefinitionReferenceId": "6c53d030-cc64-46f0-906d-2bc061cd1334",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[[parameters('effect')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/009a0c92-f5b4-4776-9b66-4ed2b4775563",
+                                        "policyDefinitionReferenceId": "009a0c92-f5b4-4776-9b66-4ed2b4775563",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[if(equals(parameters('policyEffect'), 'Deny'), 'AuditIfNotExists', 'AuditIfNotExists')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    },
+                                    {
+                                        "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/7803067c-7d34-46e3-8c79-0ca68fc4036d",
+                                        "policyDefinitionReferenceId": "7803067c-7d34-46e3-8c79-0ca68fc4036d",
+                                        "parameters": {
+                                            "effect": {
+                                                "value": "[if(equals(parameters('policyEffect'), 'Deny'), 'AuditIfNotExists', 'AuditIfNotExists')]"
+                                            }
+                                        },
+                                        "groupNames": [
+                                            "ASB_Enforce_v1.0_NS-P2"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Authorization/policyassignments",
+                            "apiVersion": "2021-06-01",
+                            "name": "[variables('benchmarkPolicyAssignmentName')]",
+                            "location": "[deployment().location]",
+                            "identity": {
+                                "type": "SystemAssigned"
+                            },
+                            "dependsOn": [
+                                "[variables('benchmarkPolicySetDefName')]"
+                            ],
+                            "properties": {
+                                "displayName": "[concat('Azure Security Benchmark v3 (', parameters('policyEffect') , ')')]",
+                                "description": "[concat( 'Azure Security Benchmark in',  parameters('policyEffect') , ' mode')]",
+                                "policyDefinitionId": "[extensionResourceId(tenantResourceId('Microsoft.Management/managementGroups', parameters('managementGroupName')), 'Microsoft.Authorization/policySetDefinitions', variables('benchmarkPolicySetDefName'))]",
+                                "enforcementMode": "Default"
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Authorization/roleAssignments",
+                            "apiVersion": "2020-10-01-preview",
+                            "name": "[guid(tenantResourceId('Microsoft.Authorization/policyassignments', variables('benchmarkPolicyAssignmentName')), parameters('managementGroupName'), parameters('roleDefinitionId'))]",
+                            "dependsOn": [
+                                "[variables('benchmarkPolicyAssignmentName')]"
+                            ],
+                            "properties": {
+                                "principalType": "ServicePrincipal",
+                                "principalId": "[reference(extensionResourceId(tenantResourceId('Microsoft.Management/managementGroups', parameters('managementGroupName')) ,'Microsoft.Authorization/policyassignments', variables('benchmarkPolicyAssignmentName')), '2021-06-01', 'Full').identity.principalId]",
+                                "roleDefinitionId": "[tenantResourceId('Microsoft.Authorization/roleDefinitions', parameters('roleDefinitionId'))]"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
