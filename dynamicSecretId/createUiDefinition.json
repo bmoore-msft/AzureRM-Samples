@@ -1,0 +1,48 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+	"handler": "Microsoft.Azure.CreateUIDef",
+	"version": "0.1.2-preview",
+	"parameters": {
+		"basics": [
+			{
+				"name": "vaultSelector",
+				"type": "Microsoft.Solutions.ResourceSelector",
+				"label": "Key Vault",
+				"resourceType": "Microsoft.KeyVault/vaults",
+				"options": {
+					"filter": {
+						"subscription": "onBasics"
+					}
+				}
+			},
+			{
+				"name": "secrets",
+				"type": "Microsoft.Solutions.ArmApiControl",
+				"request": {
+					"method": "GET",
+					"path": "[concat(subscription().id, '/resourceGroups/', last(take(split(basics('vaultSelector').id, '/'), 5)), '/providers/Microsoft.KeyVault/vaults/', basics('vaultSelector').name,'/secrets?api-version=2022-07-01')]"
+				}
+			},
+			{
+				"name": "secretList",
+				"type": "Microsoft.Common.DropDown",
+				"label": "Secret",
+				"toolTip": "",
+				"filter": true,
+				"constraints": {
+					"allowedValues": "[map(basics('secrets').value, (item) => parse(concat('{\"label\":\"', item.name, '\",\"value\":\"', item.name, '\"}')))]",
+					"required": true
+				},
+				"visible": true
+			}
+		],
+		"steps": [
+		],
+		"outputs": {
+			"location": "[location()]",
+			"vaultResourceGroup": "[last(take(split(basics('vaultSelector').id, '/'), 5))]",
+			"vaultId": "[basics('vaultSelector').id]",
+			"secretName": "[basics('secretList')]"
+		}
+	}
+}
